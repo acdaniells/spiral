@@ -1,3 +1,4 @@
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/ff4c3f4b050c4ae08ad79d3a789b7329)](https://app.codacy.com/manual/acdaniells/spiral?utm_source=github.com&utm_medium=referral&utm_content=acdaniells/spiral&utm_campaign=Badge_Grade_Settings)
 [![Build Status](https://travis-ci.org/acdaniells/spiral.svg?branch=master)](https://travis-ci.org/acdaniells/spiral)
 [![Codecov](https://codecov.io/gh/acdaniells/spiral/branch/master/graph/badge.svg)](https://codecov.io/gh/acdaniells/spiral)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
