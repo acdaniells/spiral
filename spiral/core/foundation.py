@@ -128,11 +128,19 @@ class App(CementApp):
         """
 
     def __init__(self, label=None, **kw):
+        self._loaded_bootstrap = None
+        self.interface = None
+        self.handler = None
+        self.hook = None
+        self.controller = None
+        self.plot = None
+
         self._suppress_loggers()
 
         super().__init__(label, **kw)
 
-    def _suppress_loggers(self):
+    @staticmethod
+    def _suppress_loggers():
         """
         Set logging level of non-application loggers to ERROR.
         """

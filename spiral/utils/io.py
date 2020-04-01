@@ -99,8 +99,6 @@ def read_csv(filename: str, **kwargs) -> pd.DataFrame:
         A pandas DataFrame containing the CSV data.
 
     """
-    import pandas as pd
-
     return pd.read_csv(filename, **kwargs)
 
 

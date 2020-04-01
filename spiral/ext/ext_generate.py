@@ -28,7 +28,7 @@ class GenerateTemplateAbstractBase(Controller):
         self.app.log.info(msg)
         data = {}
 
-        # builtin vars
+        # builtin variables
         maj_min = float("{}.{}".format(VERSION[0], VERSION[1]))
         data["spiral"] = {}
         data["spiral"]["version"] = get_version()
@@ -36,12 +36,12 @@ class GenerateTemplateAbstractBase(Controller):
         data["spiral"]["minor_version"] = VERSION[1]
         data["spiral"]["major_minor_version"] = maj_min
 
-        f = open(os.path.join(source, ".generate.yml"))
+        fp = open(os.path.join(source, ".generate.yml"))
         yaml_load = yaml.full_load if hasattr(yaml, "full_load") else yaml.load
-        g_config = yaml_load(f)
-        f.close()
+        g_config = yaml_load(fp)
+        fp.close()
 
-        vars = g_config.get("variables", {})
+        variables = g_config.get("variables", {})
         exclude_list = g_config.get("exclude", [])
         ignore_list = g_config.get("ignore", [])
 
@@ -57,7 +57,7 @@ class GenerateTemplateAbstractBase(Controller):
             "default": None,
         }
 
-        for defined_var in vars:
+        for defined_var in variables:
             var = var_defaults.copy()
             var.update(defined_var)
             for key in ["name", "prompt"]:

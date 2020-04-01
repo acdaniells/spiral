@@ -21,10 +21,10 @@ class TestExtensionHandler:
             class Meta:
                 label = "my_extension_handler"
 
-            def load_extension(self, *args, **kw):
+            def load_extension(self, ext_module):
                 pass
 
-            def load_extensions(self, *args, **kw):
+            def load_extensions(self, ext_list):
                 pass
 
         h = MyExtensionHandler()

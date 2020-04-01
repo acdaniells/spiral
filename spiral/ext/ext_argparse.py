@@ -126,12 +126,12 @@ class ArgparseArgumentHandler(ArgumentParser, ArgumentHandler):
         """
         LOG.debug(f"adding '{args[0]}' argument with kwargs={kwargs}")
 
-        help = kwargs.get("help")
+        help_message = kwargs.get("help")
         action = kwargs.get("action")
         default = kwargs.get("default")
 
         if (
-            help != SUPPRESS
+            help_message != SUPPRESS
             and action not in self._meta.ignore_actions
             and self._has_default(default)
         ):

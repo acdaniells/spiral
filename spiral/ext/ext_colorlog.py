@@ -72,37 +72,37 @@ class ColorLogHandler(LoggingLogHandler):
         formatter_class = ColoredFormatter
 
     def _get_console_format(self):
-        format = super()._get_console_format()
+        console_format = super()._get_console_format()
         colorize = self.app.config.get("log.colorlog", "colorize_console_log")
         if sys.stdout.isatty() or "CEMENT_TEST" in os.environ:
             if is_true(colorize):
                 for key in self._meta.secondary_colors.keys():
-                    format = format.replace(
+                    console_format = console_format.replace(
                         f"{{{key}}}",
                         f"{{reset}}{{{key}_log_color}}{{{key}}}{{reset}}{{log_color}}",
                     )
-                format = "{log_color}" + format
-        return format
+                console_format = "{log_color}" + console_format
+        return console_format
 
     def _get_file_format(self):
-        format = super()._get_file_format()
+        file_format = super()._get_file_format()
         colorize = self.app.config.get("log.colorlog", "colorize_file_log")
         if is_true(colorize):
             for key in self._meta.secondary_colors.keys():
-                format = format.replace(
+                file_format = file_format.replace(
                     f"{{{key}}}",
                     f"{{reset}}{{{key}_log_color}}{{{key}}}{{reset}}{{log_color}}",
                 )
-            format = "{log_color}" + format
-        return format
+            file_format = "{log_color}" + file_format
+        return file_format
 
-    def _get_console_formatter(self, format):
+    def _get_console_formatter(self, console_format):
         colorize = self.app.config.get("log.colorlog", "colorize_console_log")
 
         if sys.stdout.isatty() or "CEMENT_TEST" in os.environ:
             if is_true(colorize):
                 formatter = self._meta.formatter_class(
-                    format,
+                    console_format,
                     datefmt=self._meta.date_format,
                     style=self._meta.format_style,
                     log_colors=self._meta.colors,
@@ -110,24 +110,26 @@ class ColorLogHandler(LoggingLogHandler):
                 )
             else:
                 formatter = self._meta.formatter_class_without_color(
-                    format,
+                    console_format,
                     datefmt=self._meta.date_format,
                     style=self._meta.format_style,
                 )
         else:
             klass = self._meta.formatter_class_without_color  # pragma: nocover
             formatter = klass(
-                format, datefmt=self._meta.date_format, style=self._meta.format_style,
+                console_format,
+                datefmt=self._meta.date_format,
+                style=self._meta.format_style,
             )  # pragma: nocover
 
         return formatter
 
-    def _get_file_formatter(self, format):
+    def _get_file_formatter(self, file_format):
         colorize = self.app.config.get("log.colorlog", "colorize_file_log")
 
         if is_true(colorize):
             formatter = self._meta.formatter_class(
-                format,
+                file_format,
                 datefmt=self._meta.date_format,
                 style=self._meta.format_style,
                 log_colors=self._meta.colors,
@@ -135,7 +137,9 @@ class ColorLogHandler(LoggingLogHandler):
             )
         else:
             formatter = self._meta.formatter_class_without_color(
-                format, datefmt=self._meta.date_format, style=self._meta.format_style
+                file_format,
+                datefmt=self._meta.date_format,
+                style=self._meta.format_style,
             )
 
         return formatter

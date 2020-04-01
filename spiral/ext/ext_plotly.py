@@ -161,7 +161,9 @@ class PlotlyPlotHandler(PlotHandler):
 
     def _validate(self):
         if self._get_config("sizing") not in ["figure", "plot"]:
-            raise
+            raise SpiralError(
+                "Configuration parameter 'sizing' must be either 'figure' or 'plot'"
+            )
 
     def set_theme(self, name="spiral"):
         """

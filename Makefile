@@ -8,8 +8,6 @@ help:
 	@echo "rules:"
 	@echo "  develop        install development version"
 	@echo "  test           run the full test suite"
-	@echo "  comply         run code quality checks"
-	@echo "  format         run code formatting"
 	@echo "  docs           build documentation"
 	@echo "  themes         build themes"
 	@echo "  clean          clean the package"
@@ -27,18 +25,6 @@ develop:
 
 test:
 	python3 -m pytest -v --cov=spiral --cov-report=term --cov-report=html:coverage tests/
-
-comply:
-	flake8 --config=setup.cfg FILES
-
-format:
-	pre-commit run pyupgrade
-	pre-commit run seed-isort-config
-	pre-commit run isort
-	pre-commit run black
-	pre-commit run blacken-docs
-
-	black --exclude=spiral/cli/templates/generate spiral/ tests/ examples/ scripts/
 
 docs:
 	python3 setup.py build_sphinx

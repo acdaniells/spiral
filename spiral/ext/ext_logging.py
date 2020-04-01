@@ -177,36 +177,38 @@ class LoggingLogHandler(log.LogHandler):
 
     def _get_console_format(self):
         if self.get_level() == logging.getLevelName(logging.DEBUG):
-            format = self._meta.debug_format
+            console_format = self._meta.debug_format
         else:
-            format = self._meta.console_format
+            console_format = self._meta.console_format
 
-        extras = re.findall("\\{(.*?)\\}", format)
+        extras = re.findall("\\{(.*?)\\}", console_format)
         extras = [x for x in extras if x not in self._meta.log_record_attributes]
         self.extras = list(set(self.extras) | set(extras))
 
-        return format
+        return console_format
 
     def _get_file_format(self):
         if self.get_level() == logging.getLevelName(logging.DEBUG):
-            format = self._meta.debug_format
+            file_format = self._meta.debug_format
         else:
-            format = self._meta.file_format
+            file_format = self._meta.file_format
 
-        extras = re.findall("\\{(.*?)\\}", format)
+        extras = re.findall("\\{(.*?)\\}", file_format)
         extras = [x for x in extras if x not in self._meta.log_record_attributes]
         self.extras = list(set(self.extras) | set(extras))
 
-        return format
+        return file_format
 
-    def _get_file_formatter(self, format):
+    def _get_file_formatter(self, file_format):
         return self._meta.formatter_class(
-            format, datefmt=self._meta.date_format, style=self._meta.format_style
+            file_format, datefmt=self._meta.date_format, style=self._meta.format_style
         )
 
-    def _get_console_formatter(self, format):
+    def _get_console_formatter(self, console_format):
         return self._meta.formatter_class(
-            format, datefmt=self._meta.date_format, style=self._meta.format_style
+            console_format,
+            datefmt=self._meta.date_format,
+            style=self._meta.format_style,
         )
 
     def _setup_console_log(self):
@@ -217,8 +219,8 @@ class LoggingLogHandler(log.LogHandler):
         to_console = self.app.config.get(self._meta.config_section, "to_console")
         if is_true(to_console):
             console_handler = logging.StreamHandler()
-            format = self._get_console_format()
-            formatter = self._get_console_formatter(format)
+            console_format = self._get_console_format()
+            formatter = self._get_console_formatter(console_format)
             console_handler.setFormatter(formatter)
             console_handler.setLevel(getattr(logging, self.get_level()))
         else:
@@ -258,8 +260,8 @@ class LoggingLogHandler(log.LogHandler):
 
                 file_handler = FileHandler(file_path)
 
-            format = self._get_file_format()
-            formatter = self._get_file_formatter(format)
+            file_format = self._get_file_format()
+            formatter = self._get_file_formatter(file_format)
             file_handler.setFormatter(formatter)
             file_handler.setLevel(getattr(logging, self.get_level()))
         else:
