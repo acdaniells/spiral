@@ -1,0 +1,10 @@
+# Note that optional extensions may have additional dependencies. It is up to
+# the application developer to manage these requirements.
+
+# Spiral core, data and utility dependencies
+cement
+pandas
+
+# Required for Spiral developer tools
+jinja2
+PyYAML

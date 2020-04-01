@@ -1,0 +1,4 @@
+---
+variables:
+  - name: foo1
+    prompt: Variable One

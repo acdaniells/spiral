@@ -1,0 +1,8 @@
+include *.in
+include *.txt
+include LICENSE
+include Makefile
+recursive-include spiral/data *.gz
+recursive-include spiral/data *.json
+recursive-include spiral/data *.svg
+recursive-include spiral/cli/templates/generate *

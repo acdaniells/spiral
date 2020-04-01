@@ -1,0 +1,4 @@
+spiral=={{ spiral.version }}
+jinja2
+pyyaml
+colorlog

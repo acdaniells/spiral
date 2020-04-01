@@ -1,0 +1,6 @@
+include *.in
+include *.md
+include *.txt
+include LICENSE
+include Makefile
+recursive-include {{ label }}/templates *

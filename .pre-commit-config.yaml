@@ -1,0 +1,200 @@
+# Pre-commit configuration file
+
+default_language_version:
+  python: python3
+exclude: spiral/cli/templates
+repos:
+  ### Various Checks ###
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v2.5.0
+    hooks:
+      - id: check-added-large-files
+        name: check-added-large-files
+        description: Prevent giant files from being committed.
+        args: [--maxkb=500]
+      - id: check-ast
+        name: check-ast
+        description: Simply check whether files parse as valid Python.
+      - id: check-builtin-literals
+        name: check-builtin-literals
+        description:
+          Require literal syntax when initializing empty, or zero Python builtin types.
+      - id: check-case-conflict
+        name: check-case-conflict
+        description: Check for case conflicts in file names.
+      - id: check-docstring-first
+        name: check-docstring-first
+        description: Checks for a common error of placing code before the docstring.
+      - id: check-json
+        name: check-json
+        description: Attempts to load all json files to verify syntax.
+      - id: check-merge-conflict
+        name: check-merge-conflict
+        description: Check for files that contain merge conflict strings.
+      - id: check-symlinks
+        name: check-symlinks
+        description: Checks for symlinks which do not point to anything.
+      - id: check-toml
+        name: check-toml
+        description: Attempts to load all TOML files to verify syntax.
+      - id: check-yaml
+        name: check-yaml
+        description: Attempts to load all yaml files to verify syntax.
+      - id: check-vcs-permalinks
+        name: check-vcs-permalinks
+        description: Check links to VCS websites are permalinks.
+      - id: debug-statements
+        name: debug-statements
+        description:
+          Check for debugger imports and py37+ breakpoint() calls in Python source.
+      - id: detect-private-key
+        name: detect-private-key
+        description: Checks for the existence of private keys.
+      - id: mixed-line-ending
+        name: mixed-line-ending
+        description: Forces replacement of line endings with LF.
+        args: [--fix=lf]
+      - id: name-tests-test
+        name: name-tests-test
+        description: Assert that test file names match test_*.py.
+        args: [--django]
+        files: tests/*
+        exclude: tests/data/templates|tests/bootstrap.py
+
+  - repo: https://github.com/pre-commit/pygrep-hooks
+    rev: v1.5.1
+    hooks:
+      # Python minor syntax related checks
+      - id: python-check-mock-methods
+        name: python-check-mock-methods
+        description: Check for not real mock methods.
+      - id: python-use-type-annotations
+        name: python-use-type-annotations
+        description: Enforce that type annotations are used instead of type comments.
+
+  - repo: https://github.com/PyCQA/bandit
+    rev: "1.6.2"
+    hooks:
+      # Python security check
+      # https://bandit.readthedocs.io/en/latest/
+      - id: bandit
+        name: bandit
+        description: Find common security issues in your Python code using bandit.
+        args: [-ll, --ini=setup.cfg, --recursive]
+
+  - repo: https://github.com/mgedmin/check-manifest
+    rev: "0.41"
+    hooks:
+      # Manifest checker
+      # https://pypi.org/project/check-manifest/
+      - id: check-manifest
+        name: check-manifest
+        description: Check the completeness of MANIFEST.in for Python packages.
+        args: [--python=.venv/bin/python3]
+
+  ### Code Format ###
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v2.1.0
+    hooks:
+      # Upgrade Python syntax
+      - id: pyupgrade
+        name: pyupgrade
+        description: Automatically upgrade syntax for newer versions of the language.
+        args: [--py3-plus]
+
+  - repo: https://github.com/asottile/seed-isort-config
+    rev: v2.1.0
+    hooks:
+      # Seed isort
+      - id: seed-isort-config
+        name: seed-isort-config
+        description: Identify known third party Python imports.
+        args: [--exclude=spiral/cli/templates]
+
+  - repo: https://github.com/timothycrosley/isort
+    rev: "4.3.21"
+    hooks:
+      # Run isort
+      # https://timothycrosley.github.io/isort/
+      - id: isort
+        name: isort
+        description: Sort Python imports.
+
+  - repo: https://github.com/ambv/black
+    rev: 19.10b0
+    hooks:
+      # Python code formatting
+      # https://black.readthedocs.io/en/latest/
+      - id: black
+        name: black
+        description: The uncompromising Python code formatter.
+        language_version: python3.6
+
+  - repo: https://github.com/asottile/blacken-docs
+    rev: v1.6.0
+    hooks:
+      # Python code formatting in docstrings
+      - id: blacken-docs
+        name: blacken-docs
+        description: Run black on Python code blocks in documentation files.
+        additional_dependencies: [black==19.10b0]
+
+  - repo: https://github.com/prettier/prettier
+    rev: "1.19.1"
+    hooks:
+      # Format json and yaml files
+      - id: prettier
+        args: [--prose-wrap=always, --print-width=88]
+
+  ### Linters ###
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v2.5.0
+    hooks:
+      # Flake8 Linter - All packages
+      # https://flake8.pycqa.org/en/latest/
+      - id: flake8
+        name: flake8
+        description: Check Python code style for conformance.
+        args: [--config=setup.cfg]
+        additional_dependencies: [
+            flake8-bugbear, # For finding likely bugs and design problems in your program
+            flake8-comprehensions, # Helps write better list/set/dict comprehensions
+            flake8-eradicate, # Find commented out code
+            flake8-variables-names, # Helps to make more readable variables names
+            pandas-vet, # Provides opinionated linting for pandas code
+            pep8-naming, # Check PEP-8 naming conventions, plugin for flake8
+          ]
+
+  - repo: https://github.com/PyCQA/pydocstyle
+    rev: "5.0.2"
+    hooks:
+      # PyDocstyle - Spiral package only
+      # http://www.pydocstyle.org/en/latest/
+      - id: pydocstyle
+        name: pydocstyle
+        description:
+          pydocstyle is a static analysis tool for checking compliance with Python
+          docstring conventions.
+        args: [--config=setup.cfg]
+        files: spiral/*
+
+  - repo: https://github.com/amperser/proselint
+    rev: "0.10.2"
+    hooks:
+      # Prose Linter - Docs only
+      - id: proselint
+        name: proselint
+        description: Checks grammar and spelling of text files.
+        files: docs/source/docs*
+
+  ### Test Runner ###
+  - repo: local
+    hooks:
+      - id: tests
+        name: run tests
+        description: Run pytest.
+        entry:
+          pytest -v --cov=spiral --cov-report=term --cov-report=html:coverage tests/
+        language: system
+        types: [python]
+        stages: [push]

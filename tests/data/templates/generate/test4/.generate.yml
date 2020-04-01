@@ -1,0 +1,6 @@
+---
+ignore:
+  - ".*ignore-me.*"
+
+exclude:
+  - ".*exclude-me.*"
