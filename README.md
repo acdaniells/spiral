@@ -8,5 +8,5 @@
 
 # Spiral Framework
 
-Spiral is an extension of the Cement Application Framework for data science
+Spiral is an extension of the Cement Application Framework designed for data science
 applications.
