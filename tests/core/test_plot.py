@@ -17,19 +17,16 @@ class TestPlotHandler:
             class Meta:
                 label = "my_plot_handler"
 
-            def bar(self, *args, **kwargs):
+            def make_figure(self, args, constructor):
                 pass
 
             def scatter(self, *args, **kwargs):
                 pass
 
+            def bar(self, *args, **kwargs):
+                pass
+
             def line(self, *args, **kwargs):
-                pass
-
-            def heatmap(self, *args, **kwargs):
-                pass
-
-            def pie(self, *args, **kwargs):
                 pass
 
             def box(self, *args, **kwargs):
@@ -38,15 +35,12 @@ class TestPlotHandler:
             def violin(self, *args, **kwargs):
                 pass
 
-            def hist(self, *args, **kwargs):
+            def pie(self, *args, **kwargs):
                 pass
 
-            def hist2d(self, *args, **kwargs):
-                pass
-
-        h = MyPlotHandler()
-        assert h._meta.interface == "plot"
-        assert h._meta.label == "my_plot_handler"
+        handler = MyPlotHandler()
+        assert handler._meta.interface == "plot"
+        assert handler._meta.label == "my_plot_handler"
 
 
 # app functionality and coverage tests
