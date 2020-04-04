@@ -2,8 +2,6 @@
 Spiral package.
 """
 
-# flake8: noqa
-
 from spiral.core.exc import SpiralError
 from spiral.core.foundation import App, TestApp
 from spiral.core.version import get_version

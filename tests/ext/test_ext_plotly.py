@@ -30,8 +30,7 @@ def test_scatter():
             y="petal_width",
             color="species",
             symbol="species",
-            xunit="cm",
-            yunit="cm",
+            units={"x": "cm", "y": "cm"},
             title="title",
         )
 
@@ -57,7 +56,6 @@ def test_facet():
             x="petal_length",
             y="petal_width",
             facet_col="species",
-            xunit="cm",
-            yunit="cm",
+            units={"x": "cm", "y": "cm"},
             title="title",
         )

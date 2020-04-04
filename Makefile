@@ -27,6 +27,7 @@ test:
 	python3 -m pytest -v --cov=spiral --cov-report=term --cov-report=html:coverage tests/
 
 docs:
+	rm -rf docs/build/
 	python3 setup.py build_sphinx
 	@echo
 	@echo DOC: "file://"$$(echo `pwd`/docs/build/html/index.html)

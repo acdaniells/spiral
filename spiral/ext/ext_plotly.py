@@ -6,11 +6,11 @@ import os
 
 from spiral.core.exc import SpiralError
 from spiral.core.plot import PlotHandler
+from spiral.plotly import PlotlyExpress
 from spiral.utils.io import read_json, resource_exists, resource_filename
 
 import numpy as np
 import pandas as pd
-import plotly.express as px
 import plotly.graph_objs as go
 import plotly.io as pio
 
@@ -23,6 +23,17 @@ LOG = minimal_logger(__name__)
 def load_theme(name):
     """
     Load a plotly template from package data.
+
+    Parameters
+    ----------
+    name : str
+        The theme name.
+
+    Returns
+    -------
+    plotly.graph_objs.layout.Template
+        A Plotly template object.
+
     """
     filename = os.path.join("data", "plotly_themes", f"{name}.json")
 
@@ -37,6 +48,17 @@ def load_theme(name):
 def load_logo(name):
     """
     Load a logo from package data.
+
+    Parameters
+    ----------
+    name : str
+        The theme name.
+
+    Returns
+    -------
+    datauri.DataURI
+        A str based object for the data URI.
+
     """
     filename = os.path.join("data", "logos", f"{name}.svg")
 
@@ -54,6 +76,22 @@ def load_logo(name):
 def color_to_rgb(color):
     """
     Convert color string to rgb tuple.
+
+    Parameters
+    ----------
+    color : str
+        The color string.
+
+    Raises
+    ------
+    SpiralError
+        If color string type is not recognised.
+
+    Returns
+    -------
+    tuple
+        A tuple of the form (r, g, b).
+
     """
     from plotly.colors import color_parser, unlabel_rgb, hex_to_rgb
 
@@ -67,7 +105,7 @@ def color_to_rgb(color):
     return color
 
 
-class PlotlyPlotHandler(PlotHandler):
+class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
 
     """
     Plotly handler class.
@@ -87,7 +125,7 @@ class PlotlyPlotHandler(PlotHandler):
         label = "plotly"
         """The string identifier for this handler."""
 
-        custom_themes = ["spiral", "auticon", "kpmg"]
+        custom_themes = ["spiral"]
         """The list of available custom themes."""
 
         data_attributes = (
@@ -104,17 +142,20 @@ class PlotlyPlotHandler(PlotHandler):
         axes = ["x", "y", "z", "a", "b", "c"]
         """A list of axes names."""
 
-        config_defaults = dict(
-            sizing="plot",
-            figure_width=600,
-            figure_height=600,
-            plot_width=470,
-            plot_height=470,
-            facet_scale=0.5,
-            axis_margin=100,
-            border_margin=30,
-            legend_margin=200,
-            symbol_sequence=[
+        default_font_size = 12
+        """Default font size."""
+
+        config_defaults = {
+            "sizing": "plot",
+            "figure_width": 600,
+            "figure_height": 600,
+            "plot_width": 470,
+            "plot_height": 470,
+            "facet_scale": 0.5,
+            "axis_margin": 100,
+            "border_margin": 30,
+            "legend_margin": 200,
+            "symbol_sequence": [
                 "circle",
                 "square",
                 "diamond",
@@ -124,7 +165,7 @@ class PlotlyPlotHandler(PlotHandler):
                 "star-diamond",
                 "star-triangle-up",
             ],
-            line_dash_sequence=[
+            "line_dash_sequence": [
                 "solid",
                 "dot",
                 "dash",
@@ -132,11 +173,11 @@ class PlotlyPlotHandler(PlotHandler):
                 "dashdot",
                 "longdashdot",
             ],
-            marker_color_alpha=0.5,
-            show_logo=False,
-            show_watermark=False,
-            generate_title=False,
-        )
+            "marker_color_alpha": 0.5,
+            "show_logo": False,
+            "show_watermark": False,
+            "generate_title": False,
+        }
         """Configuration default values."""
 
     def __init__(self, **kw):
@@ -169,6 +210,9 @@ class PlotlyPlotHandler(PlotHandler):
         """
         Set the theme used for creating figures.
         """
+        if name == pio.templates.default:
+            return
+
         theme_names = name.split("+")
 
         for theme_name in theme_names:
@@ -262,14 +306,28 @@ class PlotlyPlotHandler(PlotHandler):
 
     @property
     def font_size(self):
-        return pio.templates[pio.templates.default].layout.font.size
+        """
+        Return the font size.
+        """
+        font_size = pio.templates[pio.templates.default].layout.font.size
+
+        if font_size is None:
+            font_size = self._meta.default_font_size
+
+        return font_size
 
     @property
     def font_size_px(self):
+        """
+        Return the font size in pixels.
+        """
         return self.font_size * 1.28
 
     @property
     def subfont_size_px(self):
+        """
+        Return the subtitle font size in pixels.
+        """
         return self.font_size * 0.9
 
     def _get_config(self, key):
@@ -292,11 +350,15 @@ class PlotlyPlotHandler(PlotHandler):
         return titlecase(text, callback=skip_words)
 
     def prepare_args(self, kwargs):
+        """
+        Prepare plotting arguments.
+        """
         # remove self from keyword args
         kwargs.pop("self")
 
         kwargs = self._prepare_data(kwargs)
         kwargs = self._prepare_title(kwargs)
+        kwargs = self._prepare_grid(kwargs)
         kwargs = self._prepare_sizes(kwargs)
         kwargs = self._prepare_labels(kwargs)
         kwargs = self._prepare_category_orders(kwargs)
@@ -306,13 +368,13 @@ class PlotlyPlotHandler(PlotHandler):
 
     def _prepare_data(self, kwargs):
         # initialise data frame
-        df = kwargs["data_frame"]
+        data = kwargs["data_frame"]
 
-        if df is None:
-            df = pd.DataFrame()
+        if data is None:
+            data = pd.DataFrame()
 
-        if not isinstance(df, pd.DataFrame):
-            df = pd.DataFrame(df)
+        if not isinstance(data, pd.DataFrame):
+            data = pd.DataFrame(data)
 
         for key, arg in kwargs.items():
             # consider only data attributes
@@ -328,18 +390,18 @@ class PlotlyPlotHandler(PlotHandler):
                 column = key
 
             # column already exists
-            if column not in df.columns:
+            if column not in data.columns:
                 # add column data
                 if hasattr(arg, "values"):
-                    df[column] = arg.values
+                    data[column] = arg.array
                 else:
-                    df[column] = np.array(arg)
+                    data[column] = np.array(arg)
 
             # update argument with column name
             kwargs[key] = column
 
         # update data frame
-        kwargs["data_frame"] = df
+        kwargs["data_frame"] = data
 
         return kwargs
 
@@ -380,23 +442,23 @@ class PlotlyPlotHandler(PlotHandler):
 
         return kwargs
 
-    def _prepare_sizes(self, kwargs):  # noqa: C901
+    def _prepare_grid(self, kwargs):
         # determine number of facet columns and rows
         facet_ncols = 1
         facet_nrows = 1
         figure_ncols = 1
         figure_nrows = 1
 
-        df = kwargs["data_frame"]
+        data = kwargs["data_frame"]
         facet_col = kwargs.get("facet_col")
         facet_row = kwargs.get("facet_row")
 
         if facet_col is not None:
-            facet_ncols = df[facet_col].nunique()
+            facet_ncols = data[facet_col].nunique()
             figure_ncols = facet_ncols
 
         if facet_row is not None:
-            facet_nrows = df[facet_row].nunique()
+            facet_nrows = data[facet_row].nunique()
             figure_nrows = facet_nrows
 
         # determine facet column wrapping
@@ -424,11 +486,16 @@ class PlotlyPlotHandler(PlotHandler):
                             figure_ncols = ncols
                             figure_nrows = nrows
 
+        self.figure_ncols = figure_ncols
+        self.figure_nrows = figure_nrows
         self.facet_ncols = facet_ncols
 
         if "facet_col_wrap" in kwargs:
             kwargs["facet_col_wrap"] = facet_col_wrap
 
+        return kwargs
+
+    def _prepare_sizes(self, kwargs):
         # calculate figure width, height and margins
         left_margin = self._get_config("axis_margin")
         right_margin = self._get_config("border_margin")
@@ -445,12 +512,16 @@ class PlotlyPlotHandler(PlotHandler):
 
         if self._get_config("sizing") == "plot":
             # apply facet plot scaling
-            if figure_ncols > 1 or figure_nrows > 1:
+            if self.figure_ncols > 1 or self.figure_nrows > 1:
                 self.plot_width *= self._get_config("facet_scale")
                 self.plot_height *= self._get_config("facet_scale")
 
-            figure_width = left_margin + self.plot_width * figure_ncols + right_margin
-            figure_height = top_margin + self.plot_height * figure_nrows + bottom_margin
+            figure_width = (
+                left_margin + self.plot_width * self.figure_ncols + right_margin
+            )
+            figure_height = (
+                top_margin + self.plot_height * self.figure_nrows + bottom_margin
+            )
             plot_width = self.plot_width
             plot_height = self.plot_height
 
@@ -483,9 +554,6 @@ class PlotlyPlotHandler(PlotHandler):
                 plot_width -= self._get_config("legend_margin")
                 right_margin += self._get_config("legend_margin")
 
-        self.figure_ncols = figure_ncols
-        self.figure_nrows = figure_nrows
-
         kwargs["width"] = figure_width
         kwargs["height"] = figure_height
 
@@ -509,12 +577,10 @@ class PlotlyPlotHandler(PlotHandler):
         labels = {x: self._title_case(self._clean_text(x)) for x in columns}
 
         # add units to axis labels
-        for axis in self._meta.axes:
-            unit = None
-            if f"{axis}unit" in kwargs:
-                unit = kwargs.pop(f"{axis}unit")
+        if "units" in kwargs:
+            units = kwargs.pop("units")
 
-            if kwargs.get(axis) is not None and unit is not None:
+            for axis, unit in units.items():
                 key = kwargs[axis]
                 label = self._title_case(self._clean_text(key))
                 labels[key] = f"{label} [{unit}]"
@@ -526,15 +592,15 @@ class PlotlyPlotHandler(PlotHandler):
     @staticmethod
     def _prepare_category_orders(kwargs):
         if "category_orders" in kwargs:
-            df = kwargs["data_frame"]
+            data = kwargs["data_frame"]
             category_orders = kwargs["category_orders"]
 
             if category_orders is None:
                 category_orders = {}
 
                 # attempt to order possible category columns
-                for column in df:
-                    series = df[column]
+                for column in data:
+                    series = data[column]
 
                     if hasattr(series, "cat"):
                         category_orders[column] = series.cat.categories.tolist()
@@ -556,7 +622,7 @@ class PlotlyPlotHandler(PlotHandler):
 
         def rangemode(series):
             try:
-                if series.values.min() / series.values.max() < 1 / 3:
+                if series.array.min() / series.array.max() < 1 / 3:
                     return "tozero"
             except TypeError:
                 pass
@@ -568,32 +634,37 @@ class PlotlyPlotHandler(PlotHandler):
                     return False
             return True
 
-        df = kwargs["data_frame"]
+        data = kwargs["data_frame"]
 
         config = {}
         for axis in self._meta.axes:
             column = kwargs.get(axis)
             if column is not None:
                 config[f"{axis}axis"] = {}
-                config[f"{axis}axis"]["rangemode"] = rangemode(df[column])
-                config[f"{axis}axis"]["showgrid"] = is_not_cat(df[column])
+                config[f"{axis}axis"]["rangemode"] = rangemode(data[column])
+                config[f"{axis}axis"]["showgrid"] = is_not_cat(data[column])
 
         kwargs["patches"].update(config)
         kwargs["patches"].update(config_override)
 
         return kwargs
 
-    def make_figure(self, kwargs, constructor):
-        note = kwargs.pop("note")
-        patches = kwargs.pop("patches")
+    def make_figure(self, args, constructor):
+        """
+        Make a figure object.
+        """
+        args = self.prepare_args(args)
 
-        print(kwargs)
+        note = args.pop("note")
+        patches = args.pop("patches")
+
+        print(args)
         print(patches)
 
-        self.figure = constructor(**kwargs)
+        self.figure = constructor(**args)
 
         self._update_layout(patches)
-        self._update_axes(patches, kwargs)
+        self._update_axes(patches, args)
         self._update_markers(patches)
         self._update_annotations(patches)
         self._add_logo(patches)
@@ -605,26 +676,26 @@ class PlotlyPlotHandler(PlotHandler):
     def _update_layout(self, patches):
         border_margin = self._get_config("border_margin")
 
-        defaults = dict(
-            margin_l=self.left_margin,
-            margin_r=self.right_margin,
-            margin_t=self.top_margin,
-            margin_b=self.bottom_margin,
-            title_x=self.figure_x(0, border_margin),
-            title_y=self.figure_y(1, -(border_margin + self.font_size)),
-            title_xref="container",
-            title_yref="container",
-            title_xanchor="left",
-            title_yanchor="bottom",
-            legend_x=self.plot_x(1, border_margin),
-            legend_y=self.plot_y(1, 0),
-            legend_xanchor="left",
-            legend_yanchor="top",
-            coloraxis_colorbar_x=self.plot_x(1, border_margin),
-            coloraxis_colorbar_y=self.plot_y(1, 0),
-            coloraxis_colorbar_xanchor="left",
-            coloraxis_colorbar_yanchor="top",
-        )
+        defaults = {
+            "margin_l": self.left_margin,
+            "margin_r": self.right_margin,
+            "margin_t": self.top_margin,
+            "margin_b": self.bottom_margin,
+            "title_x": self.figure_x(0, border_margin),
+            "title_y": self.figure_y(1, -(border_margin + self.font_size)),
+            "title_xref": "container",
+            "title_yref": "container",
+            "title_xanchor": "left",
+            "title_yanchor": "bottom",
+            "legend_x": self.plot_x(1, border_margin),
+            "legend_y": self.plot_y(1, 0),
+            "legend_xanchor": "left",
+            "legend_yanchor": "top",
+            "coloraxis_colorbar_x": self.plot_x(1, border_margin),
+            "coloraxis_colorbar_y": self.plot_y(1, 0),
+            "coloraxis_colorbar_xanchor": "left",
+            "coloraxis_colorbar_yanchor": "top",
+        }
 
         kwargs = defaults.copy()
         if "layout" in patches:
@@ -682,7 +753,7 @@ class PlotlyPlotHandler(PlotHandler):
 
             trace.update(**kwargs)
 
-        self.figure.for_each_trace(update, selector=dict(mode="markers"))
+        self.figure.for_each_trace(update, selector={"mode": "markers"})
 
     def _update_annotations(self, patches):
         defaults = {}
@@ -705,26 +776,69 @@ class PlotlyPlotHandler(PlotHandler):
             return
 
         ###
-        width, height = 0.15, 0.058  # img.size
+        """
+        import io
+        from urllib.request import urlopen
+
+        from PIL import Image
+
+        from PIL import ImageFile
+
+        def getsizes(uri):
+            # get file size *and* image size (None if not known)
+            file = urlopen(uri)
+            size = file.headers.get("content-length")
+            if size:
+                size = int(size)
+            p = ImageFile.Parser()
+            while True:
+                data = file.read(1024)
+                if not data:
+                    break
+                p.feed(data)
+                if p.image:
+                    return size, p.image.size
+                    break
+            file.close()
+            return(size, None)
+
+        #logo = urlopen(self.logo_source).read()
+
+        #file = io.StringIO(self.logo_source)
+
+        #print(file)
+
+        #im = Image.open(file)
+
+        im = Image.open(urlopen(self.logo_source).read())
+        im.thumbnail(size)
+        im.save(file + ".thumbnail", "JPEG")
+
+        width, height = 1,2 #getsizes(self.logo_source)
+
+        print(width, height)
+        """
+
+        width, height = 0.15, 0.058
         max_height = 0.075
 
         sizex, sizey = width * max_height / height, max_height
         ###
 
-        defaults = dict(
-            name="logo",
-            source=self.logo_source,
-            opacity=0.75,
-            xref="paper",
-            yref="paper",
-            sizing="contain",
-            x=1,
-            y=self.plot_y(1, self._get_config("border_margin")),
-            sizex=sizex,  # * self.figure_xscale,
-            sizey=sizey,  # * self.figure_yscale,
-            xanchor="right",
-            yanchor="bottom",
-        )
+        defaults = {
+            "name": "logo",
+            "source": self.logo_source,
+            "opacity": 0.75,
+            "xref": "paper",
+            "yref": "paper",
+            "sizing": "contain",
+            "x": 1,
+            "y": self.plot_y(1, self._get_config("border_margin")),
+            "sizex": sizex,  # * self.figure_xscale,
+            "sizey": sizey,  # * self.figure_yscale,
+            "xanchor": "right",
+            "yanchor": "bottom",
+        }
 
         kwargs = defaults.copy()
         if "logo" in patches:
@@ -737,7 +851,6 @@ class PlotlyPlotHandler(PlotHandler):
         if self._get_config("show_watermark") is False:
             return
 
-        # textangle = (self.figure_height - self._get_config("height") * 0.5) * -9 / 70
         textangle = (self.figure_height - 600 * 0.5) * -9 / 70
 
         if abs(textangle) > 45:
@@ -745,19 +858,19 @@ class PlotlyPlotHandler(PlotHandler):
         else:
             font_size = int(75)  # / self.figure_xscale)
 
-        defaults = dict(
-            name="watermark",
-            text="INTERNAL",
-            textangle=textangle,
-            opacity=0.05,
-            font_color="black",
-            font_size=font_size,
-            xref="paper",
-            yref="paper",
-            x=0.5,
-            y=0.5,
-            showarrow=False,
-        )
+        defaults = {
+            "name": "watermark",
+            "text": "INTERNAL",
+            "textangle": textangle,
+            "opacity": 0.05,
+            "font_color": "black",
+            "font_size": font_size,
+            "xref": "paper",
+            "yref": "paper",
+            "x": 0.5,
+            "y": 0.5,
+            "showarrow": False,
+        }
 
         kwargs = defaults.copy()
         if "watermark" in patches:
@@ -772,416 +885,25 @@ class PlotlyPlotHandler(PlotHandler):
         axis_margin = self._get_config("axis_margin")
         border_margin = 10
 
-        defaults = dict(
-            name="note",
-            text=text,
-            opacity=0.85,
-            font_size=self.font_size * 2 / 3,
-            x=self.plot_x(0, border_margin - axis_margin),
-            y=self.plot_y(0, -axis_margin),
-            xref="paper",
-            yref="paper",
-            xanchor="left",
-            yanchor="top",
-            showarrow=False,
-        )
+        defaults = {
+            "name": "note",
+            "text": text,
+            "opacity": 0.85,
+            "font_size": self.font_size * 2 / 3,
+            "x": self.plot_x(0, border_margin - axis_margin),
+            "y": self.plot_y(0, -axis_margin),
+            "xref": "paper",
+            "yref": "paper",
+            "xanchor": "left",
+            "yanchor": "top",
+            "showarrow": False,
+        }
 
         kwargs = defaults.copy()
         if "note" in patches:
             kwargs.update(patches["note"])
 
         self.figure.add_annotation(**kwargs)
-
-    def scatter(
-        self,
-        data_frame=None,
-        x=None,
-        y=None,
-        color=None,
-        symbol=None,
-        size=None,
-        hover_name=None,
-        hover_data=None,
-        custom_data=None,
-        text=None,
-        facet_row=None,
-        facet_col=None,
-        facet_col_wrap=0,
-        error_x=None,
-        error_x_minus=None,
-        error_y=None,
-        error_y_minus=None,
-        animation_frame=None,
-        animation_group=None,
-        category_orders={},
-        labels={},
-        color_discrete_sequence=None,
-        color_discrete_map={},
-        color_continuous_scale=None,
-        range_color=None,
-        color_continuous_midpoint=None,
-        # symbol_sequence=None,
-        symbol_map={},
-        opacity=None,
-        size_max=None,
-        marginal_x=None,
-        marginal_y=None,
-        trendline=None,
-        trendline_color_override=None,
-        log_x=False,
-        log_y=False,
-        range_x=None,
-        range_y=None,
-        render_mode="auto",
-        title=None,
-        subtitle=None,
-        template=None,
-        xunit=None,
-        yunit=None,
-        note=None,
-        patches=None,
-    ):
-        kwargs = self.prepare_args(kwargs=locals())
-
-        kwargs["symbol_sequence"] = self._get_config("symbol_sequence")
-
-        return self.make_figure(kwargs=kwargs, constructor=px.scatter)
-
-    def bar(
-        self,
-        data_frame=None,
-        x=None,
-        y=None,
-        color=None,
-        facet_row=None,
-        facet_col=None,
-        facet_col_wrap=0,
-        hover_name=None,
-        hover_data=None,
-        custom_data=None,
-        text=None,
-        error_x=None,
-        error_x_minus=None,
-        error_y=None,
-        error_y_minus=None,
-        animation_frame=None,
-        animation_group=None,
-        category_orders={},
-        labels={},
-        color_discrete_sequence=None,
-        color_discrete_map={},
-        color_continuous_scale=None,
-        range_color=None,
-        color_continuous_midpoint=None,
-        opacity=None,
-        orientation="v",
-        barmode="relative",
-        log_x=False,
-        log_y=False,
-        range_x=None,
-        range_y=None,
-        title=None,
-        subtitle=None,
-        template=None,
-        xunit=None,
-        yunit=None,
-        note=None,
-        patches=None,
-    ):
-        """
-        groups = [x, y, facet_col, facet_row, color]
-        groups = [x for x in groups if x is not None]
-        labels = groups + ["count"]
-
-        data_frame = data.groupby(groups).size().reset_index(name="count")
-
-        if orientation == "v":
-            y = "count"
-        else:
-            x = "count"
-
-        if text:
-            text = "count"
-        else:
-            text = None
-        """
-
-        kwargs = self.prepare_args(kwargs=locals())
-
-        return self.make_figure(kwargs=kwargs, constructor=px.bar)
-
-    def line(
-        self,
-        data_frame=None,
-        x=None,
-        y=None,
-        line_group=None,
-        color=None,
-        line_dash=None,
-        hover_name=None,
-        hover_data=None,
-        custom_data=None,
-        text=None,
-        facet_row=None,
-        facet_col=None,
-        facet_col_wrap=None,
-        error_x=None,
-        error_x_minus=None,
-        error_y=None,
-        error_y_minus=None,
-        animation_frame=None,
-        animation_group=None,
-        category_orders={},
-        labels={},
-        color_discrete_sequence=None,
-        color_discrete_map={},
-        line_dash_sequence=None,
-        line_dash_map={},
-        log_x=False,
-        log_y=False,
-        range_x=None,
-        range_y=None,
-        line_shape=None,
-        render_mode="auto",
-        title=None,
-        subtitle=None,
-        template=None,
-        xunit=None,
-        yunit=None,
-        note=None,
-        patches=None,
-    ):
-        kwargs = self.prepare_args(kwargs=locals())
-
-        # add scatter kwarg defaults
-        kwargs["line_dash_sequence"] = self._get_config("line_dash_sequence")
-
-        return self.make_figure(kwargs=kwargs, constructor=px.line)
-
-    def heatmap(self, **kwargs):
-        pass
-
-    def table(self, **kwargs):
-        pass
-
-    def pie(
-        self,
-        data_frame=None,
-        names=None,
-        values=None,
-        color=None,
-        color_discrete_sequence=None,
-        color_discrete_map={},
-        hover_name=None,
-        hover_data=None,
-        custom_data=None,
-        labels={},
-        title=None,
-        subtitle=None,
-        template=None,
-        width=None,
-        height=None,
-        opacity=None,
-        hole=0.3,
-        note=None,
-        patches=None,
-    ):
-        kwargs = self.prepare_args(kwargs=locals())
-
-        return self.make_figure(kwargs=kwargs, constructor=px.pie)
-
-    def box(
-        self,
-        data_frame=None,
-        x=None,
-        y=None,
-        color=None,
-        facet_row=None,
-        facet_col=None,
-        facet_col_wrap=0,
-        hover_name=None,
-        hover_data=None,
-        custom_data=None,
-        animation_frame=None,
-        animation_group=None,
-        category_orders={},
-        labels={},
-        color_discrete_sequence=None,
-        color_discrete_map={},
-        orientation="v",
-        boxmode="group",
-        log_x=False,
-        log_y=False,
-        range_x=None,
-        range_y=None,
-        points=None,
-        notched=False,
-        title=None,
-        subtitle=None,
-        template=None,
-        xunit=None,
-        yunit=None,
-        note=None,
-        patches=None,
-    ):
-        kwargs = self.prepare_args(kwargs=locals())
-
-        return self.make_figure(kwargs=kwargs, constructor=px.box)
-
-    def violin(
-        self,
-        data_frame=None,
-        x=None,
-        y=None,
-        color=None,
-        facet_row=None,
-        facet_col=None,
-        facet_col_wrap=0,
-        hover_name=None,
-        hover_data=None,
-        custom_data=None,
-        animation_frame=None,
-        animation_group=None,
-        category_orders={},
-        labels={},
-        color_discrete_sequence=None,
-        color_discrete_map={},
-        orientation="v",
-        violinmode="group",
-        log_x=False,
-        log_y=False,
-        range_x=None,
-        range_y=None,
-        points=None,
-        box=False,
-        title=None,
-        subtitle=None,
-        template=None,
-        xunit=None,
-        yunit=None,
-        note=None,
-        patches=None,
-    ):
-        kwargs = self.prepare_args(kwargs=locals())
-
-        return self.make_figure(kwargs=kwargs, constructor=px.violin)
-
-    def hist(
-        self,
-        data_frame=None,
-        x=None,
-        y=None,
-        color=None,
-        facet_row=None,
-        facet_col=None,
-        facet_col_wrap=0,
-        hover_name=None,
-        hover_data=None,
-        animation_frame=None,
-        animation_group=None,
-        category_orders={},
-        labels={},
-        color_discrete_sequence=None,
-        color_discrete_map={},
-        marginal=None,
-        opacity=None,
-        orientation="v",
-        barmode="relative",
-        barnorm=None,
-        histnorm=None,
-        log_x=False,
-        log_y=False,
-        range_x=None,
-        range_y=None,
-        histfunc=None,
-        cumulative=None,
-        nbins=None,
-        title=None,
-        template=None,
-        xunit=None,
-        yunit=None,
-        note=None,
-        patches=None,
-    ):
-        kwargs = self.prepare_args(kwargs=locals())
-
-        return self.make_figure(kwargs=kwargs, constructor=px.histogram)
-
-    def hist2d(
-        self,
-        data_frame=None,
-        x=None,
-        y=None,
-        z=None,
-        facet_row=None,
-        facet_col=None,
-        facet_col_wrap=0,
-        hover_name=None,
-        hover_data=None,
-        animation_frame=None,
-        animation_group=None,
-        category_orders={},
-        labels={},
-        color_continuous_scale=None,
-        range_color=None,
-        color_continuous_midpoint=None,
-        marginal_x=None,
-        marginal_y=None,
-        opacity=None,
-        log_x=False,
-        log_y=False,
-        range_x=None,
-        range_y=None,
-        histfunc=None,
-        histnorm=None,
-        nbinsx=None,
-        nbinsy=None,
-        title=None,
-        subtitle=None,
-        template=None,
-        xunit=None,
-        yunit=None,
-        note=None,
-        patches=None,
-    ):
-        kwargs = self.prepare_args(kwargs=locals())
-
-        return self.make_figure(kwargs=kwargs, constructor=px.density_heatmap)
-
-    def choropleth_mapbox(
-        self,
-        data_frame=None,
-        geojson=None,
-        featureidkey=None,
-        locations=None,
-        color=None,
-        hover_name=None,
-        hover_data=None,
-        custom_data=None,
-        animation_frame=None,
-        animation_group=None,
-        category_orders={},
-        labels={},
-        color_discrete_sequence=None,
-        color_discrete_map={},
-        color_continuous_scale=None,
-        range_color=None,
-        color_continuous_midpoint=None,
-        opacity=None,
-        zoom=8,
-        center=None,
-        mapbox_style=None,
-        title=None,
-        subtitle=None,
-        template=None,
-        xunit=None,
-        yunit=None,
-        note=None,
-        patches=None,
-    ):
-        kwargs = self.prepare_args(kwargs=locals())
-
-        return self.make_figure(kwargs=kwargs, constructor=px.choropleth_mapbox)
 
 
 def load(app):

@@ -20,9 +20,8 @@ class LoggingLogHandler(log.LogHandler):
     """
     Logging handler class.
 
-    This class is an implementation of the Log interface, and sets up the
-    logging facility using the standard Python `logging.
-
+    This class is an implementation of the Log interface, and sets up
+    the logging facility using the standard Python `logging
     <http://docs.python.org/library/logging.html>`_ module.
 
     """
@@ -90,14 +89,14 @@ class LoggingLogHandler(log.LogHandler):
 
         #: The default configuration dictionary to populate the ``log``
         #: section.
-        config_defaults = dict(
-            file=None,
-            level="INFO",
-            to_console=True,
-            rotate=False,
-            max_bytes=512_000,
-            max_files=4,
-        )
+        config_defaults = {
+            "file": None,
+            "level": "INFO",
+            "to_console": True,
+            "rotate": False,
+            "max_bytes": 512000,
+            "max_files": 4,
+        }
 
         #: List of arguments to use for the cli options
         #: (ex: [``-l``, ``--list``]). If a log-level argument is not wanted,
@@ -135,7 +134,9 @@ class LoggingLogHandler(log.LogHandler):
 
     def set_level(self, level):
         """
-        Set the log level. Must be one of the log levels configured in
+        Set the log level.
+
+        Must be one of the log levels configured in
         self.levels which are ``['INFO', 'WARNING', 'ERROR', 'DEBUG',
         'CRITICAL']``.
 
@@ -161,7 +162,7 @@ class LoggingLogHandler(log.LogHandler):
 
     def get_level(self):
         """
-        Returns the current log level.
+        Return the current log level.
         """
         return logging.getLevelName(self.backend.level)
 
@@ -169,7 +170,6 @@ class LoggingLogHandler(log.LogHandler):
         """
         Clear any previously configured loggers for ``namespace``.
         """
-
         for i in logging.getLogger(f"spiral:app:{namespace}").handlers:
             logging.getLogger(f"spiral:app:{namespace}").removeHandler(i)
 
@@ -237,7 +237,6 @@ class LoggingLogHandler(log.LogHandler):
         """
         Add a file log handler.
         """
-
         namespace = self._meta.namespace
         file_path = self.app.config.get(self._meta.config_section, "file")
         rotate = self.app.config.get(self._meta.config_section, "rotate")
@@ -300,17 +299,17 @@ class LoggingLogHandler(log.LogHandler):
         """
         Log to the INFO facility.
 
-        Args:
-            msg (str): The message to log.
-
-        Keyword Args:
-            namespace (str): A log prefix, generally the module ``__name__``
-                that the log is coming from. Will default to
-                ``self._meta.namespace`` if none is passed.
-
-        Other Parameters:
-            kwargs: Keyword arguments are passed on to the backend logging
-                system.
+        Parameters
+        ----------
+        msg: str
+            The message to log.
+        namespace : str
+            A log prefix, generally the module ``__name__`` that the log
+            is coming from. Will default to ``self._meta.namespace`` if
+            none is passed.
+        **kw
+            Keyword arguments are passed on to the backend logging
+            system.
 
         """
         kwargs = self._get_logging_kwargs(namespace, **kw)
@@ -320,17 +319,17 @@ class LoggingLogHandler(log.LogHandler):
         """
         Log to the WARNING facility.
 
-        Args:
-            msg (str): The message to log.
-
-        Keyword Args:
-            namespace (str): A log prefix, generally the module ``__name__``
-                that the log is coming from. Will default to
-                ``self._meta.namespace`` if none is passed.
-
-        Other Parameters:
-            kwargs: Keyword arguments are passed on to the backend logging
-                system.
+        Parameters
+        ----------
+        msg: str
+            The message to log.
+        namespace : str
+            A log prefix, generally the module ``__name__`` that the log
+            is coming from. Will default to ``self._meta.namespace`` if
+            none is passed.
+        **kw
+            Keyword arguments are passed on to the backend logging
+            system.
 
         """
         kwargs = self._get_logging_kwargs(namespace, **kw)
@@ -340,17 +339,17 @@ class LoggingLogHandler(log.LogHandler):
         """
         Log to the ERROR facility.
 
-        :Args:
-            msg (str): The message to log.
-
-        Keyword Args:
-            namespace (str): A log prefix, generally the module ``__name__``
-                that the log is coming from. Will default to
-                ``self._meta.namespace`` if none is passed.
-
-        Other Parameters:
-            kwargs: Keyword arguments are passed on to the backend logging
-                system.
+        Parameters
+        ----------
+        msg: str
+            The message to log.
+        namespace : str
+            A log prefix, generally the module ``__name__`` that the log
+            is coming from. Will default to ``self._meta.namespace`` if
+            none is passed.
+        **kw
+            Keyword arguments are passed on to the backend logging
+            system.
 
         """
         kwargs = self._get_logging_kwargs(namespace, **kw)
@@ -360,17 +359,17 @@ class LoggingLogHandler(log.LogHandler):
         """
         Log to the CRITICAL facility.
 
-        Args:
-            msg (str): The message to log.
-
-        Keyword Args:
-            namespace (str): A log prefix, generally the module ``__name__``
-                that the log is coming from. Will default to
-                ``self._meta.namespace`` if none is passed.
-
-        Other Parameters:
-            kwargs: Keyword arguments are passed on to the backend logging
-                system.
+        Parameters
+        ----------
+        msg: str
+            The message to log.
+        namespace : str
+            A log prefix, generally the module ``__name__`` that the log
+            is coming from. Will default to ``self._meta.namespace`` if
+            none is passed.
+        **kw
+            Keyword arguments are passed on to the backend logging
+            system.
 
         """
         kwargs = self._get_logging_kwargs(namespace, **kw)
@@ -380,17 +379,17 @@ class LoggingLogHandler(log.LogHandler):
         """
         Log to the DEBUG facility.
 
-        Args:
-            msg (str): The message to log.
-
-        Keyword Args:
-            namespace (str): A log prefix, generally the module ``__name__``
-                that the log is coming from. Will default to
-                ``self._meta.namespace`` if none is passed.
-
-        Other Parameters:
-            kwargs: Keyword arguments are passed on to the backend logging
-                system.
+        Parameters
+        ----------
+        msg: str
+            The message to log.
+        namespace : str
+            A log prefix, generally the module ``__name__`` that the log
+            is coming from. Will default to ``self._meta.namespace`` if
+            none is passed.
+        **kw
+            Keyword arguments are passed on to the backend logging
+            system.
 
         """
         kwargs = self._get_logging_kwargs(namespace, **kw)
@@ -398,6 +397,9 @@ class LoggingLogHandler(log.LogHandler):
 
 
 def add_logging_arguments(app):
+    """
+    Add logging arguments to argument handler.
+    """
     if app.log._meta.log_level_argument is not None:
         app.args.add_argument(
             *app.log._meta.log_level_argument,
@@ -408,6 +410,9 @@ def add_logging_arguments(app):
 
 
 def handle_logging_arguments(app):
+    """
+    Set log level based on parsed arguments.
+    """
     if hasattr(app.pargs, "log_logging_level"):
         if app.pargs.log_logging_level is not None:
             app.log.set_level(app.pargs.log_logging_level)
@@ -416,6 +421,9 @@ def handle_logging_arguments(app):
 
 
 def load(app):
+    """
+    Extension loader function.
+    """
     app.handler.register(LoggingLogHandler)
     app.hook.register("pre_argument_parsing", add_logging_arguments)
     app.hook.register("post_argument_parsing", handle_logging_arguments)

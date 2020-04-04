@@ -14,7 +14,7 @@ LOG = minimal_logger(__name__)
 class PlotInterface(Interface):
 
     """
-    This class defines the Plot Interface.
+    The Plot Interface class.
 
     Handlers that implement this
     interface must provide the methods and attributes defined below. In
@@ -33,39 +33,52 @@ class PlotInterface(Interface):
         """The string identifier of the interface."""
 
     @abstractmethod
-    def bar(self, *args, **kwargs):
+    def make_figure(self, args, constructor):
+        """
+        Make figure abstract method.
+        """
         pass  # pragma: nocover
 
     @abstractmethod
     def scatter(self, *args, **kwargs):
+        """
+        Scatter plot abstract method.
+        """
+        pass  # pragma: nocover
+
+    @abstractmethod
+    def bar(self, *args, **kwargs):
+        """
+        Bar chart abstract method.
+        """
         pass  # pragma: nocover
 
     @abstractmethod
     def line(self, *args, **kwargs):
-        pass  # pragma: nocover
-
-    @abstractmethod
-    def heatmap(self, *args, **kwargs):
-        pass  # pragma: nocover
-
-    @abstractmethod
-    def pie(self, *args, **kwargs):
+        """
+        Line plot abstract method.
+        """
         pass  # pragma: nocover
 
     @abstractmethod
     def box(self, *args, **kwargs):
+        """
+        Box plot abstract method.
+        """
         pass  # pragma: nocover
 
     @abstractmethod
     def violin(self, *args, **kwargs):
+        """
+        Violin plot abstract method.
+        """
         pass  # pragma: nocover
 
     @abstractmethod
-    def hist(self, *args, **kwargs):
-        pass  # pragma: nocover
-
-    @abstractmethod
-    def hist2d(self, *args, **kwargs):
+    def pie(self, *args, **kwargs):
+        """
+        Pie chart abstract method.
+        """
         pass  # pragma: nocover
 
 

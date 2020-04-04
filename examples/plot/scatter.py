@@ -34,8 +34,7 @@ with PlotApp() as app:
         y="petal_width",
         color="species",
         symbol="species",
-        xunit="cm",
-        yunit="cm",
+        units={"x": "cm", "y": "cm"},
         title="title",
     )
 

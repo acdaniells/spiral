@@ -8,4 +8,5 @@ Spiral Framework
    api/core/index
    api/data/index
    api/ext/index
+   api/plotly/index
    api/utils/index
