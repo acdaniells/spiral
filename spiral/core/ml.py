@@ -1,5 +1,5 @@
 """
-Spiral core ml module.
+Spiral core machine learning module.
 """
 
 from abc import abstractmethod
@@ -14,12 +14,12 @@ LOG = minimal_logger(__name__)
 class MLInterface(Interface):
 
     """
-    This class defines the ML Interface.
+    Machine learning interface class.
 
-    Handlers that implement this
-    interface must provide the methods and attributes defined below. In
-    general, most implementations should sub-class from the provided
-    :class:`MLHandler` base class as a starting point.
+    Handlers that implement this interface must provide the methods and
+    attributes defined below. In general, most implementations should
+    sub-class from the provided :class:`MLHandler` base class as a
+    starting point.
 
     """
 
@@ -34,13 +34,16 @@ class MLInterface(Interface):
 
     @abstractmethod
     def random_forest(self, *args, **kwargs):
+        """
+        Random forest abstract method.
+        """
         pass  # pragma: nocover
 
 
 class MLHandler(MLInterface, Handler):
 
     """
-    ML handler implementation.
+    Machine learning handler implementation.
     """
 
     pass  # pragma: nocover

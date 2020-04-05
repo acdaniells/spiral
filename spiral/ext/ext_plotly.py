@@ -193,8 +193,8 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
         self.figure_ncols = None
         self.figure_nrows = None
 
-    def _setup(self, app_obj):
-        super()._setup(app_obj)
+    def _setup(self, app):
+        super()._setup(app)
 
         self.figure = go.Figure()
 
@@ -419,7 +419,7 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
 
             # update title
             kwargs["title"] = title
-        elif self._get_config("generate_title"):
+        elif self._get_config("generate_title") is True:
             x = kwargs.get("x")
             y = kwargs.get("y")
 

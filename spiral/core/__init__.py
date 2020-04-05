@@ -1,0 +1,3 @@
+"""
+Spiral core subpackage.
+"""

@@ -1398,7 +1398,8 @@ class PlotlyExpress:
         Parameters
         ----------
         img: array-like image, or xarray
-            The image data. Supported array shapes are
+            The image data. Supported array shapes are:
+
             - (M, N): an image with scalar data. The data is visualized
               using a colormap.
             - (M, N, 3): an image with RGB values.
@@ -1415,7 +1416,7 @@ class PlotlyExpress:
             a single-channel image, the max of the image is used.
             Overridden by range_color.
         origin : str, 'upper' or 'lower' (default 'upper')
-            position of the [0, 0] pixel of the image array, in the
+            Position of the [0, 0] pixel of the image array, in the
             upper left or lower left corner. The convention 'upper' is
             typically used for matrices and images.
         labels : dict with str keys and str values (default `{}`)
@@ -1432,7 +1433,7 @@ class PlotlyExpress:
             the second and first dimensions of the img argument. They
             are auto-populated if the input is an xarray.
         color_continuous_scale : str or list of str
-            colormap used to map scalar data to colors (for a 2D image).
+            Colormap used to map scalar data to colors (for a 2D image).
             This parameter is not used for RGB or RGBA images. If a
             string is provided, it should be the name of a known color
             scale, and if a list is provided, it should be a list of

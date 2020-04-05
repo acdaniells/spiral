@@ -14,12 +14,12 @@ LOG = minimal_logger(__name__)
 class PlotInterface(Interface):
 
     """
-    The Plot Interface class.
+    The Plot interface class.
 
-    Handlers that implement this
-    interface must provide the methods and attributes defined below. In
-    general, most implementations should sub-class from the provided
-    :class:`PlotHandler` base class as a starting point.
+    Handlers that implement this interface must provide the methods and
+    attributes defined below. In general, most implementations should
+    sub-class from the provided :class:`PlotHandler` base class as a
+    starting point.
 
     """
 

@@ -176,6 +176,7 @@ repos:
           pydocstyle is a static analysis tool for checking compliance with Python
           docstring conventions.
         args: [--config=setup.cfg]
+        exclude: spiral/cli
         files: spiral/*
 
   - repo: https://github.com/amperser/proselint

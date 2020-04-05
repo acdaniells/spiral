@@ -1,5 +1,5 @@
 """
-Spiral package data module.
+Spiral data subpackage.
 """
 
 from ._core import list_datasets, load_dataset

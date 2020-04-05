@@ -113,8 +113,8 @@ class LoggingLogHandler(log.LogHandler):
         self.app = None
         self.extras = set()
 
-    def _setup(self, app_obj):
-        super()._setup(app_obj)
+    def _setup(self, app):
+        super()._setup(app)
         if self._meta.namespace is None:
             self._meta.namespace = self.app._meta.label
 

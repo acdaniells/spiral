@@ -16,7 +16,7 @@ colref_desc = (
 colref_list_type = "list of str or int, or Series or array-like"
 colref_list_desc = (
     "Either names of columns in `data_frame`,"
-    " or pandas Series, or array_like objects"
+    " or pandas Series, or array_like objects."
 )
 
 docs = {
@@ -261,7 +261,7 @@ docs = {
         colref_desc,
         "Values from this column or array_like are used to provide"
         " object-constancy across animation frames: rows with matching"
-        " `animation_group`s will be treated as if they describe the same"
+        " `animation_group`'s will be treated as if they describe the same"
         " object in each frame.",
     ],
     "symbol_sequence": [

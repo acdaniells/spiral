@@ -16,9 +16,9 @@ LOG = minimal_logger(__name__)
 class ExtensionHandler(ExtensionInterface, Handler):
 
     """
-    A handler class for managing loaded extensions.
+    Extension handler class.
 
-    This handler implements the Extention Interface, which handles
+    This handler implements the Extension Interface, which handles
     loading framework extensions. All extension handlers should sub-
     class from here, or ensure that their implementation meets the
     requirements of this base class.
@@ -43,39 +43,43 @@ class ExtensionHandler(ExtensionInterface, Handler):
         """
         Get all loaded extensions.
 
-        Returns:
-            list: A list of loaded extensions.
+        Returns
+        -------
+        list
+            A list of loaded extensions.
 
         """
-
         return self._loaded_extensions
 
     def list(self):
         """
+        Get all loaded extensions.
+
         Synonymous with ``get_loaded_extensions()``.
 
-        Returns:
-            list: A list of loaded extensions.
+        Returns
+        -------
+        list
+            A list of loaded extensions.
 
         """
-
         return self._loaded_extensions
 
     def load_extension(self, ext_module):
         """
-        Given an extension module name, load or in other-words ``import`` the
-        extension.
+        Load an extension.
 
-        Args:
-            ext_module (str): The extension module name. For example:
-                ``spiral.ext.ext_logging``.
+        Parameters
+        ----------
+        ext_module : str
+            The extension module name. For example: ``spiral.ext.ext_logging``.
 
-        Raises:
-            spiral.core.exc.SpiralError: Raised if ``ext_module`` can not be
-                loaded.
+        Raises
+        ------
+        SpiralError
+            Raised if ``ext_module`` can not be loaded.
 
         """
-
         # If its not a full module path then prepend our default path
         if ext_module.find(".") == -1:
             ext_module = f"spiral.ext.ext_{ext_module}"
@@ -108,13 +112,16 @@ class ExtensionHandler(ExtensionInterface, Handler):
 
     def load_extensions(self, ext_list):
         """
-        Given a list of extension modules, iterate over the list and pass
-        individually to ``self.load_extension()``.
+        Load extensions.
 
-        Args:
-            ext_list (list): A list of extension module names (str).
+        Iterates over the list of extension modules passing each to
+        ``self.load_extension()``.
+
+        Parameters
+        ----------
+        ext_list : list
+            A list of extension module names.
 
         """
-
         for ext in ext_list:
             self.load_extension(ext)

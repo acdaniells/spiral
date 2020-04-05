@@ -44,24 +44,23 @@ SIGNALS = [signal.SIGTERM, signal.SIGINT, signal.SIGHUP]
 class App(CementApp):
 
     """
-    The primary application object class.
+    Primary application object class.
     """
 
     class Meta:
 
         """
-        Application meta-data (can also be passed as keyword arguments to the
-        parent class).
+        Application meta-data.
         """
 
         extension_handler = "spiral"
         """
-        A handler class that implements the Extension interface.
+        Handler class that implements the Extension interface.
         """
 
         plot_handler = "plotly"
         """
-        A handler class that implements the Plot interface.
+        Handler class that implements the Plot interface.
         """
 
         core_extensions = [
@@ -144,7 +143,6 @@ class App(CementApp):
         """
         Set logging level of non-application loggers to ERROR.
         """
-
         for name in logging.root.manager.loggerDict:
             logger = logging.getLogger(name)
 
@@ -213,7 +211,9 @@ class App(CementApp):
 
     def setup(self):
         """
-        This function wraps all ``_setup`` actons in one call. It is called
+        Application setup method.
+
+        This method wraps all ``_setup`` actons in one call. It is called
         before ``self.run()``, allowing the application to be setup but not
         executed (possibly letting the developer perform other actions before
         full execution).
@@ -222,7 +222,6 @@ class App(CementApp):
         complete.
 
         """
-
         LOG.debug(f"now setting up the '{self._meta.label}' application")
 
         if self._meta.bootstrap is not None:
@@ -289,13 +288,18 @@ class App(CementApp):
 class TestApp(App):
 
     """
-    App subclass useful for testing.
+    Testing application.
     """
 
     # tells pytest to not consider this a class for testing
     __test__ = False
 
     class Meta:
+
+        """
+        Test application meta-data.
+        """
+
         label = f"app-{misc.rando()[:12]}"
         argv = []
         core_system_config_files = []

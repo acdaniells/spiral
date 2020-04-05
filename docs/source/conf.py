@@ -19,7 +19,7 @@ import sphinx_rtd_theme
 # -- Project information -----------------------------------------------------
 
 project = "Spiral"
-copyright = f"2020, Andrew Daniells"
+copyright = f"2020, Andrew Daniells"  # noqa: VNE003
 author = "Andrew Daniells"
 
 # The short X.Y version.
@@ -52,6 +52,9 @@ templates_path = ["_templates"]
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = []
 
+# -- Autodoc -------------------------------------------------------------------
+
+autodoc_default_options = {"member-order": "bysource"}
 
 # -- Options for HTML output ---------------------------------------------------
 

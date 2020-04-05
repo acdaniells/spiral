@@ -1,5 +1,5 @@
 """
-Spiral package Plotly module.
+Spiral Plotly subpackage.
 """
 
 from ._express import PlotlyExpress

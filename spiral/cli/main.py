@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 
+"""
+Spiral developer application main module.
+"""
+
 from spiral import App, CaughtSignal
 from spiral.cli.controllers.base import Base
 
