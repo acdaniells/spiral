@@ -18,17 +18,27 @@ LOG = minimal_logger(__name__)
 
 
 class GenerateTemplateAbstractBase(Controller):
+
+    """
+    Generate template abstract base controller.
+    """
+
     class Meta:
+
+        """
+        Controller meta-data.
+        """
+
         pass
 
     def _generate(self, source, dest):  # noqa: C901
-        msg = "Generating {} {} in {}".format(
-            self.app._meta.label, self._meta.label, dest
+        self.app.log.info(
+            f"Generating {self.app._meta.label} {self._meta.label} in {dest}"
         )
-        self.app.log.info(msg)
+
         data = {}
 
-        # builtin variables
+        # built-in variables
         maj_min = float("{}.{}".format(VERSION[0], VERSION[1]))
         data["spiral"] = {}
         data["spiral"]["version"] = get_version()
@@ -41,13 +51,13 @@ class GenerateTemplateAbstractBase(Controller):
         g_config = yaml_load(fp)
         fp.close()
 
-        variables = g_config.get("variables", {})
-        exclude_list = g_config.get("exclude", [])
-        ignore_list = g_config.get("ignore", [])
+        variable_definitions = g_config.get("variables", {})
+        excludes = g_config.get("exclude", [])
+        ignores = g_config.get("ignore", [])
 
         # default ignore the .generate.yml config
         g_config_yml = r"^(.*)[\/\\\\]%s[\/\\\\]\.generate\.yml$" % self._meta.label
-        ignore_list.append(g_config_yml)
+        ignores.append(g_config_yml)
 
         var_defaults = {
             "name": None,
@@ -57,48 +67,49 @@ class GenerateTemplateAbstractBase(Controller):
             "default": None,
         }
 
-        for defined_var in variables:
-            var = var_defaults.copy()
-            var.update(defined_var)
+        for var_def in variable_definitions:
+            defs = var_defaults.copy()
+            defs.update(var_def)
+
             for key in ["name", "prompt"]:
                 assert (
-                    var[key] is not None
+                    defs[key] is not None
                 ), f"Required generate config key missing: {key}"
 
-            val = None
-            if var["default"] is not None and self.app.pargs.defaults:
-                val = var["default"]
+            value = None
+            if defs["default"] is not None and self.app.pargs.defaults:
+                value = defs["default"]
 
-            elif var["default"] is not None:
-                default_text = f" [{var['default']}]"
+            elif defs["default"] is not None:
+                default_text = f" [{defs['default']}]"
 
             else:
                 default_text = ""  # pragma: nocover
 
-            if val is None:
+            if value is None:
 
                 class MyPrompt(shell.Prompt):
                     class Meta:
-                        text = "{}{}:".format(var["prompt"], default_text)
-                        default = var.get("default", None)
+                        text = f"{defs['prompt']}{default_text}:"
+                        default = defs.get("default", None)
 
-                p = MyPrompt()
-                val = p.prompt()  # pragma: nocover
+                prompt = MyPrompt()
+                value = prompt.prompt()  # pragma: nocover
 
-            if var["case"] in ["lower", "upper", "title"]:
-                val = getattr(val, var["case"])()
-            elif var["case"] is not None:
+            if defs["case"] in ["lower", "upper", "title"]:
+                value = getattr(value, defs["case"])()
+            elif defs["case"] is not None:
                 self.app.log.warning(
-                    f"Invalid configuration for variable '{var['name']}': "
+                    f"Invalid configuration for variable '{defs['name']}': "
                     + "case must be one of lower, upper, or title."
                 )
 
-            if var["validate"] is not None:
+            if defs["validate"] is not None:
                 assert re.match(
-                    var["validate"], val
-                ), f"Invalid Response (must match: '{var['validate']}')"
+                    defs["validate"], value
+                ), f"Invalid Response (must match: '{defs['validate']}')"
 
-            data[var["name"]] = val
+            data[defs["name"]] = value
 
         try:
             self.app.template.copy(
@@ -106,8 +117,8 @@ class GenerateTemplateAbstractBase(Controller):
                 dest,
                 data,
                 force=self.app.pargs.force,
-                ignore=ignore_list,
-                exclude=exclude_list,
+                ignore=ignores,
+                exclude=excludes,
             )
         except AssertionError as e:
             if re.match("(.*)already exists(.*)", e.args[0]):
@@ -116,10 +127,9 @@ class GenerateTemplateAbstractBase(Controller):
                 raise  # pragma: nocover
 
     def _clone(self, source, dest):
-        msg = "Cloning {} {} template to {}".format(
-            self.app._meta.label, self._meta.label, dest
+        self.app.log.info(
+            f"Cloning {self.app._meta.label} {self._meta.label} template to {dest}"
         )
-        self.app.log.info(msg)
 
         if os.path.exists(dest) and self.app.pargs.force is True:
             shutil.rmtree(dest)
@@ -140,6 +150,9 @@ class GenerateTemplateAbstractBase(Controller):
 
 
 def setup_template_items(app):
+    """
+    Add template controllers to the application.
+    """
     template_dirs = []
     template_items = []
 
@@ -178,11 +191,9 @@ def setup_template_items(app):
                     label = item
                     stacked_on = "generate"
                     stacked_type = "nested"
-                    help = f"generate {item} from template"
+                    help = f"generate {item} from template"  # noqa: VNE003
                     arguments = [
-                        # ------------------------------------------------------
                         (["dest"], {"help": "destination directory path"}),
-                        # ------------------------------------------------------
                         (
                             ["-f", "--force"],
                             {
@@ -191,7 +202,6 @@ def setup_template_items(app):
                                 "action": "store_true",
                             },
                         ),
-                        # ------------------------------------------------------
                         (
                             ["-D", "--defaults"],
                             {
@@ -200,7 +210,6 @@ def setup_template_items(app):
                                 "action": "store_true",
                             },
                         ),
-                        # ------------------------------------------------------
                         (
                             ["--clone"],
                             {
@@ -216,7 +225,17 @@ def setup_template_items(app):
 
 
 class Generate(Controller):
+
+    """
+    Generate controller.
+    """
+
     class Meta:
+
+        """
+        Controller meta-data.
+        """
+
         label = "generate"
         stacked_on = "base"
         stacked_type = "nested"
@@ -231,5 +250,8 @@ class Generate(Controller):
 
 
 def load(app):
+    """
+    Extension loader function.
+    """
     app.handler.register(Generate)
     app.hook.register("pre_run", setup_template_items)

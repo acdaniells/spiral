@@ -53,16 +53,16 @@ class ColorLogHandler(LoggingLogHandler):
         #: Default configuration settings. Will be overridden by the same
         #: settings in any application configuration file under a
         #: ``[log.colorlog]`` block.
-        config_defaults = dict(
-            file=None,
-            level="INFO",
-            to_console=True,
-            rotate=False,
-            max_bytes=512_000,
-            max_files=4,
-            colorize_file_log=False,
-            colorize_console_log=True,
-        )
+        config_defaults = {
+            "file": None,
+            "level": "INFO",
+            "to_console": True,
+            "rotate": False,
+            "max_bytes": 512_000,
+            "max_files": 4,
+            "colorize_file_log": False,
+            "colorize_console_log": True,
+        }
 
         #: Formatter class to use for non-colorized logging (non-tty, file,
         #: etc)
@@ -146,4 +146,7 @@ class ColorLogHandler(LoggingLogHandler):
 
 
 def load(app):
+    """
+    Extension loader function.
+    """
     app.handler.register(ColorLogHandler)

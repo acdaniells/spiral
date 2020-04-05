@@ -21,20 +21,22 @@ LOG = minimal_logger(__name__)
 
 
 def _clean_label(label):
-    return re.sub("_", "-", label)
+    return re.sub("_", "-", label)  # noqa: PD005
 
 
 def _clean_func(func):
     if func is None:
         return None
     else:
-        return re.sub("-", "_", func)
+        return re.sub("-", "_", func)  # noqa: PD005
 
 
 class ParserHelpFormatter(RawDescriptionHelpFormatter):
 
     """
-    This help formatter class reformats the help message for commands.
+    Help formatter class.
+
+    Reformats the help message for commands.
     """
 
     def _format_action(self, action):
@@ -71,9 +73,9 @@ class ArgparseArgumentHandler(ArgumentParser, ArgumentHandler):
     """
     Argparse handler class.
 
-    This class implements the Argument Handler interface, and sub-classes from
-    :py:class:`argparse.ArgumentParser`. Please reference the argparse
-    documentation for full usage of the class.
+    This class implements the Argument Handler interface, and
+    sub-classes from :py:class:`argparse.ArgumentParser`. Please
+    reference the argparse documentation for full usage of the class.
 
     Arguments and keyword arguments are passed directly to
     ArgumentParser on initialization.
@@ -117,11 +119,11 @@ class ArgparseArgumentHandler(ArgumentParser, ArgumentHandler):
 
     def add_argument(self, *args, **kwargs):
         """
-        Add an argument to the parser. Arguments and keyword arguments are
-        passed directly to ``ArgumentParser.add_argument()``.
+        Add an argument to the parser.
 
-        See the :py:class:`argparse.ArgumentParser` documentation for
-        help.
+        Arguments and keyword arguments are passed directly to
+        ``ArgumentParser.add_argument()``. See the
+        :py:class:`argparse.ArgumentParser` documentation for help.
 
         """
         LOG.debug(f"adding '{args[0]}' argument with kwargs={kwargs}")
@@ -143,15 +145,20 @@ class ArgparseArgumentHandler(ArgumentParser, ArgumentHandler):
 
     def parse(self, arg_list):
         """
-        Parse a list of arguments, and return them as an object. Meaning an
-        argument name of 'foo' will be stored as parsed_args.foo.
+        Argument parser.
 
-        Args:
-            arg_list (list): A list of arguments (generally sys.argv) to be
-                parsed.
+        Parse a list of arguments, and return them as an object. Meaning
+        an argument name of 'foo' will be stored as parsed_args.foo.
 
-        Returns:
-            object: Instance object whose members are the arguments parsed.
+        Parameters
+        ----------
+        arg_list : list
+            A list of arguments (generally sys.argv) to be parsed.
+
+        Returns
+        -------
+        object
+            Instance object whose members are the arguments parsed.
 
         """
         if self._meta.ignore_unknown_arguments is True:
@@ -185,39 +192,43 @@ class ArgparseArgumentHandler(ArgumentParser, ArgumentHandler):
 class expose:  # noqa: N801
 
     """
-    Used to expose functions to be listed as sub-commands under the controller
-    namespace. It also decorates the function with meta-data for the argument
-    parser.
+    Expose decorator.
 
-    Keyword Args:
-        hide (bool): Whether the command should be visible.
-        arguments (list): List of tuples that define arguments to add to this
-            commands sub-parser.
-        parser_options (dict): Additional options to pass to Argparse.
-        label (str): String identifier for the command.
+    Used to expose functions to be listed as sub-commands under the
+    controller namespace. It also decorates the function with meta-data
+    for the argument parser.
 
-    Example:
+    Parameters
+    ----------
+    hide : bool
+        Whether the command should be visible.
+    arguments : list
+        List of tuples that define arguments to add to this commands
+        sub-parser.
+    label : str
+        String identifier for the command.
+    parser_options : dict
+        Additional options to pass to Argparse.
 
-        .. code-block:: python
+    Example
+    -------
+    .. code-block:: python
 
-            class Base(ArgparseController):
-                class Meta:
-                    label = "base"
+        class Base(ArgparseController):
+            class Meta:
+                label = "base"
 
-                # Note: Default functions only work in Python > 3.4
-                @expose(hide=True)
-                def default(self):
-                    print("In Base.default()")
+            @expose(hide=True)
+            def default(self):
+                print("In Base.default()")
 
-                @expose(
-                    help="this is the help message for my_command",
-                    aliases=["my_cmd"],  # only available in Python 3+
-                    arguments=[
-                        (["-f", "--foo"], dict(help="foo option", action="store", dest="foo")),
-                    ],
-                )
-                def my_command(self):
-                    print("In Base.my_command()")
+            @expose(
+                help="this is the help message for my_command",
+                aliases=["my_cmd"],
+                arguments=[(["--foo"], {help: "foo option", action: "store"})],
+            )
+            def my_command(self):
+                print("In Base.my_command()")
 
     """
 
@@ -227,7 +238,7 @@ class expose:  # noqa: N801
         self.label = label
         self.parser_options = parser_options
 
-    def __call__(self, func):
+    def __call__(self, func):  # noqa: D102
         if self.label is None:
             self.label = func.__name__
 
@@ -250,148 +261,186 @@ ex = expose
 class ArgparseController(ControllerHandler):
 
     """
-    This is an implementation of the Controller handler interface, and is a
-    base class that application controllers should subclass from. Registering
-    it directly as a handler is useless.
+    Argparse Controller.
 
-    NOTE: This handler **requires** that the applications ``arg_handler`` be
-    ``argparse``. If using an alternative argument handler you will need to
-    write your own controller base class or modify this one.
+    This is an implementation of the Controller handler interface, and
+    is a base class that application controllers should subclass from.
+    Registering it directly as a handler is useless.
 
-    Example:
+    Note
+    ----
+    This handler **requires** that the applications ``arg_handler`` be
+    ``argparse``. If using an alternative argument handler you will need
+    to write your own controller base class or modify this one.
 
-        .. code-block:: python
+    Example
+    -------
+    .. code-block:: python
 
-            from spiral.ext.ext_argparse import ArgparseController
-
-
-            class Base(ArgparseController):
-                class Meta:
-                    label = "base"
-                    description = "description at the top of --help"
-                    epilog = "the text at the bottom of --help."
-                    arguments = [
-                        (["-f", "--foo"], {"help": "my foo option", "dest": "foo"}),
-                    ]
+        from spiral.ext.ext_argparse import ArgparseController
 
 
-            class Second(ArgparseController):
-                class Meta:
-                    label = "second"
-                    stacked_on = "base"
-                    stacked_type = "embedded"
-                    arguments = [
-                        (["--foo2"], {"help": "my foo2 option", "dest": "foo2"}),
-                    ]
+        class Base(ArgparseController):
+            class Meta:
+                label = "base"
+                description = "description at the top of --help"
+                epilog = "the text at the bottom of --help."
+                arguments = [
+                    (["-f", "--foo"], {"help": "my foo option", "dest": "foo"}),
+                ]
+
+
+        class Second(ArgparseController):
+            class Meta:
+                label = "second"
+                stacked_on = "base"
+                stacked_type = "embedded"
+                arguments = [
+                    (["--foo2"], {"help": "my foo2 option", "dest": "foo2"}),
+                ]
 
     """
 
     class Meta:
 
         """
-        Controller meta-data (can be passed as keyword arguments to the parent
-        class).
+        Controller meta-data.
         """
 
-        # The interface this class implements.
-        interface = "controller"
-
-        #: The string identifier for the controller.
         label = None
+        """The string identifier for the controller."""
 
-        #: A list of aliases for the controller/sub-parser. **Only available
-        #: in Python > 3**.
         aliases = []
+        """
+        A list of aliases for the controller/sub-parser. **Only
+        available in Python > 3**
+        """
 
-        #: A config [section] to merge config_defaults into. Spiral will
-        #: default to controller.<label> if None is set.
         config_section = None
+        """
+        A config [section] to merge config_defaults into. Spiral will
+        default to controller.<label> if None is set.
+        """
 
-        #: Configuration defaults (type: dict) that are merged into the
-        #: applications config object for the config_section mentioned above.
         config_defaults = {}
+        """
+        Configuration defaults that are merged into the applications
+        config object for the config_section mentioned above.
+        """
 
-        #: Arguments to pass to the argument_handler. The format is a list
-        #: of tuples whos items are a ( list, dict ). Meaning:
-        #:
-        #: ``[ ( ['-f', '--foo'], dict(help='foo option', dest='foo') ), ]``
-        #:
-        #: This is equivelant to manually adding each argument to the argument
-        #: parser as in the following example:
-        #:
-        #: ``add_argument('-f', '--foo', help='foo option', dest='foo')``
         arguments = []
+        """
+        Arguments to pass to the argument_handler. The format is a list
+        of tuples whos items are a (list, dict). Meaning:
 
-        #: A label of another controller to 'stack' commands/arguments on top
-        #: of.
+        ``[(['-f', '--foo'], dict(help='foo option', dest='foo'))]``
+
+        This is equivalent to manually adding each argument to the
+        argument parser as in the following example:
+
+        ``add_argument('-f', '--foo', help='foo option', dest='foo')``
+        """
+
         stacked_on = "base"
+        """
+        A label of another controller to 'stack' commands/arguments on
+        top of.
+        """
 
-        #: Whether to embed commands and arguments within the parent
-        #: controller's namespace, or to nest this controller under the parent
-        #: controller (making it a sub-command). Must be one of
-        #: ``['embedded', 'nested']``.
         stacked_type = "embedded"
+        """
+        Whether to embed commands and arguments within the parent
+        controller's namespace, or to nest this controller under the
+        parent controller (making it a sub-command). Must be one of
+        ``['embedded', 'nested']``.
+        """
 
-        #: Description for the sub-parser group in help output.
         description = None
+        """Description for the sub-parser group in help output."""
 
-        #: The title for the sub-parser group in help output.
         title = "sub-commands"
+        """The title for the sub-parser group in help output."""
 
-        #: Text for the controller/sub-parser group in help output (for
-        #: nested stacked controllers only).
-        help = None
+        help = None  # noqa: VNE003
+        """
+        Text for the controller/sub-parser group in help output (for
+        nested stacked controllers only).
+        """
 
-        #: Whether or not to hide the controller entirely.
         hide = False
+        """Whether or not to hide the controller entirely."""
 
-        #: The text that is displayed at the bottom when ``--help`` is passed.
         epilog = None
+        """
+        The text that is displayed at the bottom when ``--help`` is passed.
+        """
 
-        #: The text that is displayed at the top when ``--help`` is passed.
-        #: Defaults to Argparse standard usage.
         usage = None
+        """
+        The text that is displayed at the top when ``--help`` is passed.
+        Defaults to Argparse standard usage.
+        """
 
-        #: The argument formatter class to use to display ``--help`` output
-        #: for a parser.
         parser_formatter = ParserHelpFormatter
+        """
+        The argument formatter class to use to display ``--help`` output
+        for a parser.
+        """
 
-        #: The argument formatter class to use to display ``--help`` output
-        #: for commands.
         command_formatter = RawDescriptionHelpFormatter
+        """
+        The argument formatter class to use to display ``--help`` output
+        for commands.
+        """
 
-        #: The total help width (help and description).
         formatter_width = 80
+        """The total help width (help and description)."""
 
-        #: The maximum help width.
         formatter_max_help_position = 24
+        """The maximum help width."""
 
-        #: Additional keyword arguments passed when
-        #: ``ArgumentParser.add_subparsers()`` is called to create this
-        #: controller namespace. WARNING: This could break things, use at
-        #: your own risk. Useful if you need additional features from
-        #: Argparse that is not built into the controller Meta-data.
         subparser_options = {}
+        """
+        Additional keyword arguments passed when
+        ``ArgumentParser.add_subparsers()`` is called to create this
+        controller namespace.
 
-        #: Additional keyword arguments passed when
-        #: ``ArgumentParser.add_parser()`` is called to create this
-        #: controller sub-parser. WARNING: This could break things, use at
-        #: your own risk. Useful if you need additional features from
-        #: Argparse that is not built into the controller Meta-data.
+        Warning
+        -------
+        This could break things, use at your own risk. Useful if you
+        need additional features from Argparse that is not built into
+        the controller Meta-data.
+        """
+
         parser_options = {}
+        """
+        Additional keyword arguments passed when
+        ``ArgumentParser.add_parser()`` is called to create this
+        controller sub-parser.
 
-        #: Function to call if no sub-command is passed. By default this is
-        #: ``_default``, which is equivelant to passing ``-h/--help``. It
-        #: should be noted that this is the only place where having a command
-        #: function start with ``_`` is OK simply because we treat it as a
-        #: special case (different that other exposed commands).
-        #:
-        #: If set to ``None``, Spiral will simply pass and exit 0.
-        #:
-        #: Note: Currently, default function/sub-command only works on
-        #: Python > 3.4. Previous versions of Python/Argparse will throw the
-        #: exception ``error: too few arguments``.
+        Warning
+        -------
+        This could break things, use at your own risk. Useful if you
+        need additional features from Argparse that is not built into
+        the controller Meta-data.
+        """
+
         default_func = "_default"
+        """
+        Function to call if no sub-command is passed. By default this is
+        ``_default``, which is equivelant to passing ``-h/--help``. It
+        should be noted that this is the only place where having a
+        command function start with ``_`` is OK simply because we treat
+        it as a special case (different that other exposed commands).
+
+        If set to ``None``, Spiral will simply pass and exit 0.
+
+        Note
+        ----
+        Currently, default function/sub-command only works on
+        Python > 3.4. Previous versions of Python/Argparse will throw
+        the exception ``error: too few arguments``.
+        """
 
     def __init__(self, *args, **kw):
         super().__init__(*args, **kw)
@@ -611,8 +660,8 @@ class ArgparseController(ControllerHandler):
             parents["base"] = sub
 
         base_parser_options = self._get_parser_options(self)
-        for key, val in base_parser_options.items():
-            setattr(self.app.args, key, val)
+        for key, value in base_parser_options.items():
+            setattr(self.app.args, key, value)
 
         # handle base controller separately
         parsers["base"].add_argument(
@@ -789,9 +838,10 @@ class ArgparseController(ControllerHandler):
         """
         Get a list of exposed commands for this controller.
 
-        Returns:
-
-            exposed_commands (list): List of exposed commands (labels)
+        Returns
+        -------
+        exposed_commands : list
+            List of exposed commands (labels).
 
         """
         # get exposed commands
@@ -805,48 +855,52 @@ class ArgparseController(ControllerHandler):
 
     def _pre_argument_parsing(self):
         """
-        Called on every controller just before arguments are parsed. Provides
-        an alternative means of adding arguments to the controller, giving more
-        control than using ``Meta.arguments``.
+        Pre argument parsing.
 
-        Example:
+        Called on every controller just before arguments are parsed.
+        Provides an alternative means of adding arguments to the
+        controller, giving more control than using ``Meta.arguments``.
 
-            .. code-block:: python
+        Example
+        -------
+        .. code-block:: python
 
-                class Base(ArgparseController):
-                    class Meta:
-                        label = "base"
+            class Base(ArgparseController):
+                class Meta:
+                    label = "base"
 
-                    def _pre_argument_parsing(self):
-                        p = self._parser
-                        p.add_argument("-f", "--foo", help="my foo option", dest="foo")
+                def _pre_argument_parsing(self):
+                    parser = self._parser
+                    parser.add_argument("-f", "--foo", help="my foo option", dest="foo")
 
-                    def _post_argument_parsing(self):
-                        if self.app.pargs.foo:
-                            print("Got Foo Option Before Controller Dispatch")
+                def _post_argument_parsing(self):
+                    if self.app.pargs.foo:
+                        print("Got Foo Option Before Controller Dispatch")
 
         """
         pass
 
     def _post_argument_parsing(self):
         """
-        Called on every controller just after arguments are parsed (assuming
-        that the parser hasn't thrown an exception). Provides an alternative
-        means of handling passed arguments. Note that, this function is called
-        on every controller, regardless of what namespace and sub-command is
-        eventually going to be called. Therefore, every controller can handle
-        their arguments if the user passed them.
+        Post argument parsing.
 
-        For example:
+        Called on every controller just after arguments are parsed
+        (assuming that the parser hasn't thrown an exception). Provides
+        an alternative means of handling passed arguments. Note that,
+        this function is called on every controller, regardless of what
+        namespace and sub-command is eventually going to be called.
+        Therefore, every controller can handle their arguments if the
+        user passed them.
 
+        Example
+        -------
         .. code-block:: console
 
             $ myapp --foo bar some-controller --foo2 bar2 some-command
 
-
-        In the above, the ``base`` controller (or a nested controller) would
-        handle ``--foo``, while ``some-controller`` would handle ``foo2``
-        before ``some-command`` is executed.
+        In the above, the ``base`` controller (or a nested controller)
+        would handle ``--foo``, while ``some-controller`` would handle
+        ``foo2`` before ``some-command`` is executed.
 
         .. code-block:: python
 
@@ -862,10 +916,12 @@ class ArgparseController(ControllerHandler):
                     if self.app.pargs.foo:
                         print("Got Foo Option Before Controller Dispatch")
 
-        Note that ``self._parser`` within a controller is that individual
-        controllers ``sub-parser``, and is not the root parser ``app.args``
-        (unless you are the ``base`` controller, in which case
-        ``self._parser`` is synonymous with ``app.args``).
+        Note
+        ----
+        Note that ``self._parser`` within a controller is that
+        individual controllers ``sub-parser``, and is not the root
+        parser ``app.args`` (unless you are the ``base`` controller, in
+        which case ``self._parser`` is synonymous with ``app.args``).
 
         """
         pass
@@ -928,4 +984,7 @@ class ArgparseController(ControllerHandler):
 
 
 def load(app):
+    """
+    Extension loader function.
+    """
     app.handler.register(ArgparseArgumentHandler)
