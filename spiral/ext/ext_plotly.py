@@ -29,6 +29,11 @@ def load_theme(name):
     name : str
         The theme name.
 
+    Raises
+    ------
+    SpiralError
+        If the theme file cannot be found.
+
     Returns
     -------
     plotly.graph_objs.layout.Template
@@ -176,7 +181,6 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
             "marker_color_alpha": 0.5,
             "show_logo": False,
             "show_watermark": False,
-            "generate_title": False,
         }
         """Configuration default values."""
 
@@ -192,6 +196,7 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
         self.facet_ncols = None
         self.figure_ncols = None
         self.figure_nrows = None
+        self.facet_col_wrap = None
 
     def _setup(self, app):
         super()._setup(app)
@@ -409,33 +414,13 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
         # remove subtitle from keyword args
         subtitle = kwargs.pop("subtitle")
 
-        title = kwargs["title"]
+        title = kwargs["title"] or None
 
         if title is not None:
             title = self._title_case(self._clean_text(title))
 
             if subtitle is not None:
                 title += f"<br><sup>{self._clean_text(subtitle)}</sup>"
-
-            # update title
-            kwargs["title"] = title
-        elif self._get_config("generate_title") is True:
-            x = kwargs.get("x")
-            y = kwargs.get("y")
-
-            subitems = [
-                kwargs.get("facet_col"),
-                kwargs.get("facet_row"),
-                kwargs.get("color"),
-            ]
-
-            if x is not None and y is not None:
-                title = self._title_case(self._clean_text(f"{x} vs {y}"))
-                subtitle = ", ".join([x for x in subitems if x is not None])
-
-                if subtitle != "":
-                    subtitle = f"Per {subtitle}"
-                    title += f"<br><sup>{self._clean_text(subtitle)}</sup>"
 
             # update title
             kwargs["title"] = title
@@ -489,6 +474,7 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
         self.figure_ncols = figure_ncols
         self.figure_nrows = figure_nrows
         self.facet_ncols = facet_ncols
+        self.facet_col_wrap = facet_col_wrap
 
         if "facet_col_wrap" in kwargs:
             kwargs["facet_col_wrap"] = facet_col_wrap
@@ -575,6 +561,11 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
         # default labels
         columns = kwargs["data_frame"].columns.tolist()
         labels = {x: self._title_case(self._clean_text(x)) for x in columns}
+
+        # add histfunc
+        if kwargs.get("histfunc") is not None:
+            key = kwargs["histfunc"]
+            labels[key] = self._title_case(self._clean_text(key))
 
         # add units to axis labels
         if "units" in kwargs:
@@ -704,21 +695,19 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
         self.figure.update_layout(**kwargs)
 
     def _update_axes(self, patches, kwargs):
+        # add xaxis tick labels and titles back to overhanging plots
+        # in facet column figures
+        if kwargs.get("x") is not None and self.facet_col_wrap is not None:
+            xaxis_title_text = kwargs["labels"][kwargs["x"]]
+
+            def update(axis):
+                axis.update(showticklabels=True, title_text=xaxis_title_text)
+
+            for col in range(self.facet_ncols % self.figure_ncols, self.figure_ncols):
+                self.figure.for_each_xaxis(update, col=col + 1, row=2)
+
+        # patch all axes
         if "x" in kwargs and "y" in kwargs:
-            if kwargs["x"] is not None:
-                # add xaxis tick labels and titles back to overhanging plots
-                # in facet column figures
-                xaxis_title_text = kwargs["labels"][kwargs.get("x")]
-
-                def update(axis):
-                    axis.update(showticklabels=True, title_text=xaxis_title_text)
-
-                for col in range(
-                    self.facet_ncols % self.figure_ncols, self.figure_ncols
-                ):
-                    self.figure.for_each_xaxis(update, col=col + 1, row=2)
-
-            # patch all axes
             defaults = {}
 
             kwargs = defaults.copy()

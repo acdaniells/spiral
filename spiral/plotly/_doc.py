@@ -11,12 +11,12 @@ getfullargspec = inspect.getfullargspec
 colref_type = "str or int or Series or array-like"
 colref_desc = (
     "Either a name of a column in `data_frame`,"
-    " or a pandas Series or array_like object."
+    " or a pandas Series or array-like object."
 )
 colref_list_type = "list of str or int, or Series or array-like"
 colref_list_desc = (
     "Either names of columns in `data_frame`,"
-    " or pandas Series, or array_like objects."
+    " or pandas Series, or array-like objects."
 )
 
 docs = {
@@ -30,70 +30,70 @@ docs = {
     "x": [
         colref_type,
         colref_desc,
-        "Values from this column or array_like are used to position marks along"
+        "Values from this column or array-like are used to position marks along"
         " the x axis in Cartesian coordinates. For horizontal histograms, these"
         " values are used as inputs to `histfunc`.",
     ],
     "y": [
         colref_type,
         colref_desc,
-        "Values from this column or array_like are used to position marks along"
+        "Values from this column or array-like are used to position marks along"
         " the y axis in Cartesian coordinates. For vertical histograms, these"
         " values are used as inputs to `histfunc`.",
     ],
     "z": [
         colref_type,
         colref_desc,
-        "Values from this column or array_like are used to position marks along"
+        "Values from this column or array-like are used to position marks along"
         " the z axis in Cartesian coordinates. For `density_heatmap` and"
         " `density_contour` these values are used as the inputs to `histfunc`.",
     ],
     "a": [
         colref_type,
         colref_desc,
-        "Values from this column or array_like are used to position marks along"
+        "Values from this column or array-like are used to position marks along"
         " the a axis in ternary coordinates.",
     ],
     "b": [
         colref_type,
         colref_desc,
-        "Values from this column or array_like are used to position marks along"
+        "Values from this column or array-like are used to position marks along"
         " the b axis in ternary coordinates.",
     ],
     "c": [
         colref_type,
         colref_desc,
-        "Values from this column or array_like are used to position marks along"
+        "Values from this column or array-like are used to position marks along"
         " the c axis in ternary coordinates.",
     ],
     "r": [
         colref_type,
         colref_desc,
-        "Values from this column or array_like are used to position marks along"
+        "Values from this column or array-like are used to position marks along"
         " the radial axis in polar coordinates.",
     ],
     "theta": [
         colref_type,
         colref_desc,
-        "Values from this column or array_like are used to position marks along"
+        "Values from this column or array-like are used to position marks along"
         " the angular axis in polar coordinates.",
     ],
     "values": [
         colref_type,
         colref_desc,
-        "Values from this column or array_like are used to set values"
+        "Values from this column or array-like are used to set values"
         " associated to sectors.",
     ],
     "parents": [
         colref_type,
         colref_desc,
-        "Values from this column or array_like are used as parents in sunburst"
+        "Values from this column or array-like are used as parents in sunburst"
         " and treemap charts.",
     ],
     "ids": [
         colref_type,
         colref_desc,
-        "Values from this column or array_like are used to set ids of sectors",
+        "Values from this column or array-like are used to set ids of sectors",
     ],
     "path": [
         colref_list_type,
@@ -105,19 +105,19 @@ docs = {
     "lat": [
         colref_type,
         colref_desc,
-        "Values from this column or array_like are used to position marks"
+        "Values from this column or array-like are used to position marks"
         " according to latitude on a map.",
     ],
     "lon": [
         colref_type,
         colref_desc,
-        "Values from this column or array_like are used to position marks"
+        "Values from this column or array-like are used to position marks"
         " according to longitude on a map.",
     ],
     "locations": [
         colref_type,
         colref_desc,
-        "Values from this column or array_like are to be interpreted according"
+        "Values from this column or array-like are to be interpreted according"
         " to `locationmode` and mapped to longitude/latitude.",
     ],
     "dimensions": [
@@ -134,75 +134,75 @@ docs = {
     "error_x": [
         colref_type,
         colref_desc,
-        "Values from this column or array_like are used to size x-axis error"
+        "Values from this column or array-like are used to size x-axis error"
         " bars. If `error_x_minus` is `None`, error bars will be symmetrical,"
         " otherwise `error_x` is used for the positive direction only.",
     ],
     "error_x_minus": [
         colref_type,
         colref_desc,
-        "Values from this column or array_like are used to size x-axis error"
+        "Values from this column or array-like are used to size x-axis error"
         " bars in the negative direction. Ignored if `error_x` is `None`.",
     ],
     "error_y": [
         colref_type,
         colref_desc,
-        "Values from this column or array_like are used to size y-axis error"
+        "Values from this column or array-like are used to size y-axis error"
         " bars. If `error_y_minus` is `None`, error bars will be symmetrical,"
         " otherwise `error_y` is used for the positive direction only.",
     ],
     "error_y_minus": [
         colref_type,
         colref_desc,
-        "Values from this column or array_like are used to size y-axis error"
+        "Values from this column or array-like are used to size y-axis error"
         " bars in the negative direction. Ignored if `error_y` is `None`.",
     ],
     "error_z": [
         colref_type,
         colref_desc,
-        "Values from this column or array_like are used to size z-axis error"
+        "Values from this column or array-like are used to size z-axis error"
         " bars. If `error_z_minus` is `None`, error bars will be symmetrical,"
         " otherwise `error_z` is used for the positive direction only.",
     ],
     "error_z_minus": [
         colref_type,
         colref_desc,
-        "Values from this column or array_like are used to size z-axis error"
+        "Values from this column or array-like are used to size z-axis error"
         " bars in the negative direction. Ignored if `error_z` is `None`.",
     ],
     "color": [
         colref_type,
         colref_desc,
-        "Values from this column or array_like are used to assign color to marks.",
+        "Values from this column or array-like are used to assign color to marks.",
     ],
     "opacity": ["float", "Value between 0 and 1. Sets the opacity for markers."],
     "line_dash": [
         colref_type,
         colref_desc,
-        "Values from this column or array_like are used to assign dash-patterns"
+        "Values from this column or array-like are used to assign dash-patterns"
         " to lines.",
     ],
     "line_group": [
         colref_type,
         colref_desc,
-        "Values from this column or array_like are used to group rows of"
+        "Values from this column or array-like are used to group rows of"
         " `data_frame` into lines.",
     ],
     "symbol": [
         colref_type,
         colref_desc,
-        "Values from this column or array_like are used to assign symbols to marks.",
+        "Values from this column or array-like are used to assign symbols to marks.",
     ],
     "size": [
         colref_type,
         colref_desc,
-        "Values from this column or array_like are used to assign mark sizes.",
+        "Values from this column or array-like are used to assign mark sizes.",
     ],
     "radius": ["int (default is 30)", "Sets the radius of influence of each point."],
     "hover_name": [
         colref_type,
         colref_desc,
-        "Values from this column or array_like appear in bold in the hover tooltip.",
+        "Values from this column or array-like appear in bold in the hover tooltip.",
     ],
     "hover_data": [
         colref_list_type,
@@ -219,12 +219,12 @@ docs = {
     "text": [
         colref_type,
         colref_desc,
-        "Values from this column or array_like appear in the figure as text labels.",
+        "Values from this column or array-like appear in the figure as text labels.",
     ],
     "names": [
         colref_type,
         colref_desc,
-        "Values from this column or array_like are used as labels for sectors.",
+        "Values from this column or array-like are used as labels for sectors.",
     ],
     "locationmode": [
         "str",
@@ -235,13 +235,13 @@ docs = {
     "facet_row": [
         colref_type,
         colref_desc,
-        "Values from this column or array_like are used to assign marks to"
+        "Values from this column or array-like are used to assign marks to"
         " faceted subplots in the vertical direction.",
     ],
     "facet_col": [
         colref_type,
         colref_desc,
-        "Values from this column or array_like are used to assign marks to"
+        "Values from this column or array-like are used to assign marks to"
         " faceted subplots in the horizontal direction.",
     ],
     "facet_col_wrap": [
@@ -253,13 +253,13 @@ docs = {
     "animation_frame": [
         colref_type,
         colref_desc,
-        "Values from this column or array_like are used to assign marks to"
+        "Values from this column or array-like are used to assign marks to"
         " animation frames.",
     ],
     "animation_group": [
         colref_type,
         colref_desc,
-        "Values from this column or array_like are used to provide"
+        "Values from this column or array-like are used to provide"
         " object-constancy across animation frames: rows with matching"
         " `animation_group`'s will be treated as if they describe the same"
         " object in each frame.",
