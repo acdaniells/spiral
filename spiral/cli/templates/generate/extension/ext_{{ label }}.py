@@ -1,6 +1,4 @@
-"""
-{{ label }} extension module.
-"""
+"""{{ label }} extension module."""
 
 from spiral import minimal_logger
 

@@ -1,6 +1,4 @@
-"""
-{{ label }} plug-in controller.
-"""
+"""{{ label }} plug-in controller."""
 
 from spiral import Controller, ex
 

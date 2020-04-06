@@ -1,6 +1,4 @@
-"""
-{{ label }} core version module.
-"""
+"""{{ label }} core version module."""
 
 from spiral import get_version as spiral_get_version
 

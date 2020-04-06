@@ -1,3 +1,1 @@
-"""
-Spiral CLI subpackage.
-"""
+"""Spiral CLI subpackage."""

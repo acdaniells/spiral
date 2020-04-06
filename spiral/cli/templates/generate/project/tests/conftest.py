@@ -1,6 +1,4 @@
-"""
-PyTest Fixtures.
-"""
+"""PyTest Fixtures."""
 
 import pytest
 
@@ -10,8 +8,8 @@ from spiral import fs
 @pytest.fixture(scope="function")
 def tmp(request):
     """
-    Create a `tmp` object that generates a unique temporary directory, and file
-    for each test function that requires it.
+    Create a `tmp` object that generates a unique temporary directory,
+    and file for each test function that requires it.
     """
     t = fs.Tmp()
     yield t

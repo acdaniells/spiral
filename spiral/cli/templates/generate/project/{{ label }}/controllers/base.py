@@ -1,6 +1,4 @@
-"""
-{{ label }} base controller.
-"""
+"""{{ label }} base controller."""
 
 from spiral import Controller, ex
 

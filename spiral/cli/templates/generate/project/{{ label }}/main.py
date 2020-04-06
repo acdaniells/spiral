@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 
-"""
-{{ label }} main.
-"""
+"""{{ label }} main."""
 
 from spiral import App, CaughtSignal, TestApp, init_defaults
 
@@ -15,9 +13,8 @@ CONFIG["{{ label }}"]["foo"] = "bar"
 
 
 class {{ class_name }}(App):
-    """
-    {{ name }} primary application.
-    """
+
+    """{{ name }} primary application."""
 
     class Meta:
         label = "{{ label }}"
@@ -48,9 +45,8 @@ class {{ class_name }}(App):
 
 
 class {{ class_name }}Test(TestApp, {{ class_name }}):
-    """
-    A sub-class of {{ class_name }} that is better suited for testing.
-    """
+
+    """{{ name }} testing application."""
 
     class Meta:
         label = "{{ label }}"

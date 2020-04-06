@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 
-"""
-Spiral developer application main module.
-"""
+"""Spiral developer application main module."""
 
 from spiral import App, CaughtSignal
 from spiral.cli.controllers.base import Base
@@ -10,9 +8,7 @@ from spiral.cli.controllers.base import Base
 
 class SpiralApp(App):
 
-    """
-    Spiral developer application.
-    """
+    """Spiral developer application."""
 
     class Meta:
         label = "spiral"
@@ -27,9 +23,7 @@ class SpiralApp(App):
 
 class SpiralTestApp(SpiralApp):
 
-    """
-    Spiral testing application.
-    """
+    """Spiral testing application."""
 
     class Meta:
         argv = []
