@@ -35,7 +35,6 @@ class SklearnMLHandler(MLHandler):
         """
         Random forest model builder.
         """
-        pass
 
 
 def extend_app(app):

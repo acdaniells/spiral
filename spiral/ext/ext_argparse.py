@@ -180,7 +180,8 @@ class ArgparseArgumentHandler(ArgumentParser, ArgumentHandler):
 
         return True
 
-    def _format_default(self, default):
+    @staticmethod
+    def _format_default(default):
         if isinstance(default, (list, tuple, set)):
             default = " ".join([str(x) for x in default])
         else:
@@ -564,7 +565,8 @@ class ArgparseController(ControllerHandler):
     def _process_parsed_arguments(self):
         pass
 
-    def _get_subparser_options(self, contr):
+    @staticmethod
+    def _get_subparser_options(contr):
         kwargs = contr._meta.subparser_options.copy()
 
         if "title" not in kwargs.keys():

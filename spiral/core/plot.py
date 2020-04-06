@@ -87,5 +87,3 @@ class PlotHandler(PlotInterface, Handler):
     """
     Plot handler implementation.
     """
-
-    pass  # pragma: nocover

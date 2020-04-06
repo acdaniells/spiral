@@ -37,7 +37,6 @@ class MLInterface(Interface):
         """
         Random forest abstract method.
         """
-        pass  # pragma: nocover
 
 
 class MLHandler(MLInterface, Handler):
@@ -45,5 +44,3 @@ class MLHandler(MLInterface, Handler):
     """
     Machine learning handler implementation.
     """
-
-    pass  # pragma: nocover

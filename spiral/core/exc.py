@@ -8,5 +8,3 @@ class SpiralError(Exception):
     """
     Spiral generic errors.
     """
-
-    pass
