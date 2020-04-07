@@ -31,40 +31,40 @@ docs = {
         colref_type,
         colref_desc,
         "Values from this column or array-like are used to position marks along"
-        " the x axis in Cartesian coordinates. For horizontal histograms, these"
+        " the x-axis in Cartesian coordinates. For horizontal histograms, these"
         " values are used as inputs to `histfunc`.",
     ],
     "y": [
         colref_type,
         colref_desc,
         "Values from this column or array-like are used to position marks along"
-        " the y axis in Cartesian coordinates. For vertical histograms, these"
+        " the y-axis in Cartesian coordinates. For vertical histograms, these"
         " values are used as inputs to `histfunc`.",
     ],
     "z": [
         colref_type,
         colref_desc,
         "Values from this column or array-like are used to position marks along"
-        " the z axis in Cartesian coordinates. For `density_heatmap` and"
+        " the z-axis in Cartesian coordinates. For `density_heatmap` and"
         " `density_contour` these values are used as the inputs to `histfunc`.",
     ],
     "a": [
         colref_type,
         colref_desc,
         "Values from this column or array-like are used to position marks along"
-        " the a axis in ternary coordinates.",
+        " the a-axis in ternary coordinates.",
     ],
     "b": [
         colref_type,
         colref_desc,
         "Values from this column or array-like are used to position marks along"
-        " the b axis in ternary coordinates.",
+        " the b-axis in ternary coordinates.",
     ],
     "c": [
         colref_type,
         colref_desc,
         "Values from this column or array-like are used to position marks along"
-        " the c axis in ternary coordinates.",
+        " the c-axis in ternary coordinates.",
     ],
     "r": [
         colref_type,
@@ -587,8 +587,8 @@ docs = {
         "If `True`, histogram values are cumulative.",
     ],
     "nbins": ["int", "Positive integer.", "Sets the number of bins."],
-    "nbinsx": ["int", "Positive integer.", "Sets the number of bins along the x axis."],
-    "nbinsy": ["int", "Positive integer.", "Sets the number of bins along the y axis."],
+    "nbinsx": ["int", "Positive integer.", "Sets the number of bins along the x-axis."],
+    "nbinsy": ["int", "Positive integer.", "Sets the number of bins along the y-axis."],
     "branchvalues": [
         "str",
         "'total' or 'remainder'. Determines how the items in `values` are"
