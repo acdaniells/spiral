@@ -4,7 +4,6 @@ Spiral core foundation module.
 
 import logging
 import os
-import signal
 import sys
 
 from importlib import reload as reload_module
@@ -37,8 +36,6 @@ from cement.utils.misc import minimal_logger
 join = os.path.join
 
 LOG = minimal_logger(__name__)
-
-SIGNALS = [signal.SIGTERM, signal.SIGINT, signal.SIGHUP]
 
 
 class App(CementApp):
@@ -74,10 +71,10 @@ class App(CementApp):
         """
         List of Spiral core extensions. These are generally required by
         Spiral and should only be modified if you know what you're
-        doing. Use ``App.Meta.extensions`` to add to this list, rather than
-        overriding core extensions. That said if you want to prune down
-        your application, you can remove core extensions if they are
-        not necessary (for example if using your own log handler
+        doing. Use ``App.Meta.extensions`` to add to this list, rather
+        than overriding core extensions. That said if you want to prune
+        down your application, you can remove core extensions if they
+        are not necessary (for example if using your own log handler
         extension you might not need/want ``LoggingLogHandler`` to be
         registered).
         """
@@ -95,13 +92,14 @@ class App(CementApp):
             "plot_handler",
         ]
         """
-        List of meta options that can/will be overridden by config options
-        of the ``base`` config section (where ``base`` is the base
-        configuration section of the application which is determined by
-        ``App.Meta.config_section`` but defaults to ``App.Meta.label``). These
-        overrides are required by the framework to function properly and should
-        not be used by end-user (developers) unless you really know what
-        you're doing. To add your own extended meta overrides you should use
+        List of meta options that can/will be overridden by config
+        options of the ``base`` config section (where ``base`` is the
+        base configuration section of the application which is
+        determined by ``App.Meta.config_section`` but defaults to
+        ``App.Meta.label``). These overrides are required by the
+        framework to function properly and should not be used by
+        end-user (developers) unless you really know what you're doing.
+        To add your own extended meta overrides you should use
         ``App.Meta.meta_override``.
         """
 
@@ -120,10 +118,10 @@ class App(CementApp):
             ml.MLInterface,
         ]
         """
-        List of core interfaces to be defined (by the framework). You should
-        not modify this unless you really know what you're doing... instead,
-        you probably want to add your own interfaces to
-        ``App.Meta.interfaces``.
+        List of core interfaces to be defined (by the framework). You
+        should not modify this unless you really know what you're
+        doing... instead, you probably want to add your own interfaces
+        to ``App.Meta.interfaces``.
         """
 
     def __init__(self, label=None, **kw):
