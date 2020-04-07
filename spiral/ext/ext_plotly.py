@@ -196,7 +196,6 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
         self.facet_ncols = None
         self.figure_ncols = None
         self.figure_nrows = None
-        self.facet_col_wrap = None
 
     def _setup(self, app):
         super()._setup(app)
@@ -358,9 +357,7 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
         """
         Prepare plotting arguments.
         """
-        # remove self from keyword args
         kwargs.pop("self")
-
         kwargs = self._prepare_data(kwargs)
         kwargs = self._prepare_title(kwargs)
         kwargs = self._prepare_grid(kwargs)
@@ -372,49 +369,47 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
         return kwargs
 
     def _prepare_data(self, kwargs):
-        # initialise data frame
-        data = kwargs["data_frame"]
+        if "data_frame" in kwargs:
+            data = kwargs["data_frame"]
 
-        if data is None:
-            data = pd.DataFrame()
+            if data is None:
+                data = pd.DataFrame()
 
-        if not isinstance(data, pd.DataFrame):
-            data = pd.DataFrame(data)
+            if not isinstance(data, pd.DataFrame):
+                data = pd.DataFrame(data)
 
-        for key, arg in kwargs.items():
-            # consider only data attributes
-            if key not in self._meta.data_attributes or arg is None:
-                continue
+            for key, arg in kwargs.items():
+                # consider only data attributes
+                if key not in self._meta.data_attributes or arg is None:
+                    continue
 
-            # get column name
-            if isinstance(arg, pd.Series):
-                column = arg.name
-            elif isinstance(arg, str):
-                column = arg
-            else:
-                column = key
-
-            # column already exists
-            if column not in data.columns:
-                # add column data
-                if hasattr(arg, "values"):
-                    data[column] = arg.array
+                # get column name
+                if isinstance(arg, pd.Series):
+                    column = arg.name
+                elif isinstance(arg, str):
+                    column = arg
                 else:
-                    data[column] = np.array(arg)
+                    column = key
 
-            # update argument with column name
-            kwargs[key] = column
+                # column already exists
+                if column not in data.columns:
+                    # add column data
+                    if hasattr(arg, "values"):
+                        data[column] = arg.array
+                    else:
+                        data[column] = np.array(arg)
 
-        # update data frame
-        kwargs["data_frame"] = data
+                # update argument with column name
+                kwargs[key] = column
+
+            # update data frame
+            kwargs["data_frame"] = data
 
         return kwargs
 
     def _prepare_title(self, kwargs):
-        # remove subtitle from keyword args
-        subtitle = kwargs.pop("subtitle")
-
         title = kwargs["title"] or None
+        subtitle = kwargs.pop("subtitle") or None
 
         if title is not None:
             title = self._title_case(self._clean_text(title))
@@ -422,7 +417,6 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
             if subtitle is not None:
                 title += f"<br><sup>{self._clean_text(subtitle)}</sup>"
 
-            # update title
             kwargs["title"] = title
 
         return kwargs
@@ -434,47 +428,47 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
         figure_ncols = 1
         figure_nrows = 1
 
-        data = kwargs["data_frame"]
-        facet_col = kwargs.get("facet_col")
-        facet_row = kwargs.get("facet_row")
+        if "data_frame" in kwargs:
+            data = kwargs["data_frame"]
+            facet_col = kwargs.get("facet_col")
+            facet_row = kwargs.get("facet_row")
 
-        if facet_col is not None:
-            facet_ncols = data[facet_col].nunique()
-            figure_ncols = facet_ncols
+            if facet_col is not None:
+                facet_ncols = data[facet_col].nunique()
+                figure_ncols = facet_ncols
 
-        if facet_row is not None:
-            facet_nrows = data[facet_row].nunique()
-            figure_nrows = facet_nrows
+            if facet_row is not None:
+                facet_nrows = data[facet_row].nunique()
+                figure_nrows = facet_nrows
 
-        # determine facet column wrapping
-        facet_col_wrap = None
+            # determine facet column wrapping
+            facet_col_wrap = None
 
-        if facet_ncols > 1 and facet_nrows == 1:
-            self.facet_ncols = facet_ncols
-            facet_col_wrap = kwargs.get("facet_col_wrap") or None
+            if facet_ncols > 1 and facet_nrows == 1:
+                self.facet_ncols = facet_ncols
+                facet_col_wrap = kwargs.get("facet_col_wrap") or None
 
-            # column wrapping defined by user
-            if facet_col_wrap is not None:
-                figure_ncols = facet_col_wrap
-                figure_nrows = np.ceil(facet_ncols / facet_col_wrap)
+                # column wrapping defined by user
+                if facet_col_wrap is not None:
+                    figure_ncols = facet_col_wrap
+                    figure_nrows = np.ceil(facet_ncols / facet_col_wrap)
 
-            # automatically determine wrapping
-            best_remainder_frac = 0
-            if facet_col_wrap is None:
-                for nrows in range(1, facet_ncols + 1):
-                    ncols = int(np.ceil(facet_ncols / nrows))
-                    if ncols >= nrows and ncols / nrows <= 3:
-                        remainder_frac = (facet_ncols % ncols) / ncols or 1
-                        if remainder_frac >= best_remainder_frac:
-                            best_remainder_frac = remainder_frac
-                            facet_col_wrap = ncols
-                            figure_ncols = ncols
-                            figure_nrows = nrows
+                # automatically determine wrapping
+                best_remainder_frac = 0
+                if facet_col_wrap is None:
+                    for nrows in range(1, facet_ncols + 1):
+                        ncols = int(np.ceil(facet_ncols / nrows))
+                        if ncols >= nrows and ncols / nrows <= 3:
+                            remainder_frac = (facet_ncols % ncols) / ncols or 1
+                            if remainder_frac >= best_remainder_frac:
+                                best_remainder_frac = remainder_frac
+                                facet_col_wrap = ncols
+                                figure_ncols = ncols
+                                figure_nrows = nrows
 
         self.figure_ncols = figure_ncols
         self.figure_nrows = figure_nrows
         self.facet_ncols = facet_ncols
-        self.facet_col_wrap = facet_col_wrap
 
         if "facet_col_wrap" in kwargs:
             kwargs["facet_col_wrap"] = facet_col_wrap
@@ -508,8 +502,8 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
             figure_height = (
                 top_margin + self.plot_height * self.figure_nrows + bottom_margin
             )
-            plot_width = self.plot_width
-            plot_height = self.plot_height
+            plot_width = self.plot_width * self.figure_ncols
+            plot_height = self.plot_height * self.figure_nrows
 
             if kwargs["title"] is not None:
                 figure_height += title_margin
@@ -553,19 +547,23 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
         self.top_margin = top_margin
         self.bottom_margin = bottom_margin
 
+        print(figure_width, plot_width, figure_height, plot_height)
         print(left_margin, right_margin, top_margin, bottom_margin)
 
         return kwargs
 
     def _prepare_labels(self, kwargs):
-        # default labels
-        columns = kwargs["data_frame"].columns.tolist()
-        labels = {x: self._title_case(self._clean_text(x)) for x in columns}
+        if not isinstance(kwargs["labels"], dict):
+            kwargs["labels"] = {}
 
-        # add histfunc
-        if kwargs.get("histfunc") is not None:
-            key = kwargs["histfunc"]
-            labels[key] = self._title_case(self._clean_text(key))
+        labels = {}
+        if "data_frame" in kwargs:
+            columns = kwargs["data_frame"].columns.tolist()
+            labels = {
+                x: self._title_case(self._clean_text(x))
+                for x in columns
+                if x not in kwargs["labels"]
+            }
 
         # add units to axis labels
         if "units" in kwargs:
@@ -580,65 +578,74 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
 
         return kwargs
 
-    @staticmethod
-    def _prepare_category_orders(kwargs):
-        if "category_orders" in kwargs:
+    def _prepare_category_orders(self, kwargs):
+        if "data_frame" in kwargs and "category_orders" in kwargs:
             data = kwargs["data_frame"]
-            category_orders = kwargs["category_orders"]
 
-            if category_orders is None:
-                category_orders = {}
+            if not isinstance(kwargs["category_orders"], dict):
+                kwargs["category_orders"] = {}
 
-                # attempt to order possible category columns
-                for column in data:
-                    series = data[column]
+            category_orders = {}
+            for column in data:
+                if column in kwargs["category_orders"]:
+                    continue
 
-                    if hasattr(series, "cat"):
-                        category_orders[column] = series.cat.categories.tolist()
-                    elif str(series.dtype) in ("object", "int", "bool"):
-                        if series.nunique() / len(series) < 0.5:
-                            categories = series.unique()
-                            categories.sort()
-                            category_orders[column] = categories.tolist()
+                series = data[column]
+                if hasattr(series, "cat"):
+                    category_orders[column] = series.cat.categories.tolist()
+                elif self._is_series_cat(series):
+                    categories = series.unique()
+                    categories.sort()
+                    category_orders[column] = categories.tolist()
 
-                kwargs["category_orders"] = category_orders
+            kwargs["category_orders"] = category_orders
 
         return kwargs
 
-    def _prepare_patches(self, kwargs):  # noqa: C901
+    def _prepare_patches(self, kwargs):
         if "patches" not in kwargs or not isinstance(kwargs["patches"], dict):
             kwargs["patches"] = {}
 
-        config_override = kwargs["patches"].copy()
+        patches = {}
+        if "data_frame" in kwargs:
+            data = kwargs["data_frame"]
 
-        def rangemode(series):
-            try:
-                if series.array.min() / series.array.max() < 1 / 3:
-                    return "tozero"
-            except TypeError:
-                pass
-            return "normal"
+            for axis in ("x", "y"):
+                column = kwargs.get(axis)
+                if column is not None:
+                    patches[f"{axis}axis"] = {
+                        "showgrid": not self._is_series_cat(data[column]),
+                        "rangemode": self._rangemode(data[column]),
+                    }
 
-        def is_not_cat(series):
-            if str(series.dtype) in ("category", "object", "int", "bool"):
-                if series.nunique() / len(series) < 0.5:
-                    return False
-            return True
+        if "note" in kwargs:
+            patches["note"] = kwargs.pop("note")
 
-        data = kwargs["data_frame"]
-
-        config = {}
-        for axis in self._meta.axes:
-            column = kwargs.get(axis)
-            if column is not None:
-                config[f"{axis}axis"] = {}
-                config[f"{axis}axis"]["rangemode"] = rangemode(data[column])
-                config[f"{axis}axis"]["showgrid"] = is_not_cat(data[column])
-
-        kwargs["patches"].update(config)
-        kwargs["patches"].update(config_override)
+        patches.update(kwargs["patches"])
+        kwargs["patches"] = patches
 
         return kwargs
+
+    @staticmethod
+    def _is_series_cat(series):
+        if str(series.dtype) in ("category"):
+            return True
+
+        if str(series.dtype) in ("object", "int", "bool"):
+            if series.nunique() / len(series) < 0.5:
+                return True
+
+        return False
+
+    @staticmethod
+    def _rangemode(series):
+        try:
+            if series.array.min() / series.array.max() < 1 / 3:
+                return "tozero"
+        except TypeError:
+            pass
+
+        return "normal"
 
     def make_figure(self, args, constructor):
         """
@@ -646,11 +653,7 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
         """
         args = self.prepare_args(args)
 
-        note = args.pop("note")
         patches = args.pop("patches")
-
-        print(args)
-        print(patches)
 
         self.figure = constructor(**args)
 
@@ -660,11 +663,24 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
         self._update_annotations(patches)
         self._add_logo(patches)
         self._add_watermark(patches)
-        self._add_note(note, patches)
+        self._add_note(patches)
 
         return self.figure
 
     def _update_layout(self, patches):
+        global is_leg
+        is_leg = False
+
+        def _is_leg(trace):
+            global is_leg
+            if "showlegend" in trace and trace.showlegend is True:
+                is_leg = True
+
+        self.figure.for_each_trace(_is_leg)
+
+        if "coloraxis" in self.figure.layout:
+            is_leg = True
+
         border_margin = self._get_config("border_margin")
 
         defaults = {
@@ -697,7 +713,7 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
     def _update_axes(self, patches, kwargs):
         # add xaxis tick labels and titles back to overhanging plots
         # in facet column figures
-        if kwargs.get("x") is not None and self.facet_col_wrap is not None:
+        if kwargs.get("x") is not None and kwargs["facet_col_wrap"] is not None:
             xaxis_title_text = kwargs["labels"][kwargs["x"]]
 
             def update(axis):
@@ -706,21 +722,35 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
             for col in range(self.facet_ncols % self.figure_ncols, self.figure_ncols):
                 self.figure.for_each_xaxis(update, col=col + 1, row=2)
 
-        # patch all axes
-        if "x" in kwargs and "y" in kwargs:
-            defaults = {}
+        # update axis titles
+        def _update_title_text(axis):
+            text = axis["title_text"]
 
-            kwargs = defaults.copy()
-            if "xaxis" in patches:
-                kwargs.update(patches["xaxis"])
+            if text is not None:
+                if text in kwargs["labels"]:
+                    text = kwargs["labels"][text]
+                else:
+                    text = self._title_case(self._clean_text(text))
 
-            self.figure.update_xaxes(**kwargs)
+                axis.update(title_text=text)
 
-            kwargs = defaults.copy()
-            if "yaxis" in patches:
-                kwargs.update(patches["yaxis"])
+        self.figure.for_each_xaxis(_update_title_text)
+        self.figure.for_each_yaxis(_update_title_text)
 
-            self.figure.update_yaxes(**kwargs)
+        # apply patches all axes
+        defaults = {}
+
+        kwargs = defaults.copy()
+        if "xaxis" in patches:
+            kwargs.update(patches["xaxis"])
+
+        self.figure.update_xaxes(**kwargs)
+
+        kwargs = defaults.copy()
+        if "yaxis" in patches:
+            kwargs.update(patches["yaxis"])
+
+        self.figure.update_yaxes(**kwargs)
 
     def _update_markers(self, patches):
         defaults = {}
@@ -764,7 +794,6 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
         if self._get_config("show_logo") is False:
             return
 
-        ###
         """
         import io
         from urllib.request import urlopen
@@ -812,7 +841,6 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
         max_height = 0.075
 
         sizex, sizey = width * max_height / height, max_height
-        ###
 
         defaults = {
             "name": "logo",
@@ -867,8 +895,8 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
 
         self.figure.add_annotation(**kwargs)
 
-    def _add_note(self, text, patches):
-        if text is None:
+    def _add_note(self, patches):
+        if patches.get("note") is None:
             return
 
         axis_margin = self._get_config("axis_margin")
@@ -876,7 +904,7 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
 
         defaults = {
             "name": "note",
-            "text": text,
+            "text": patches["note"],
             "opacity": 0.85,
             "font_size": self.font_size * 2 / 3,
             "x": self.plot_x(0, border_margin - axis_margin),
