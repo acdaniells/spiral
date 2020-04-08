@@ -157,8 +157,8 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
             "plot_width": 470,
             "plot_height": 470,
             "facet_scale": 0.5,
-            "axis_margin": 100,
             "border_margin": 30,
+            "axis_margin": 70,
             "legend_margin": 200,
             "symbol_sequence": [
                 "circle",
@@ -353,20 +353,32 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
 
         return titlecase(text, callback=skip_words)
 
-    def prepare_args(self, kwargs):
+    def make_figure(self, args, constructor):
         """
-        Prepare plotting arguments.
+        Make a figure object.
         """
-        kwargs.pop("self")
-        kwargs = self._prepare_data(kwargs)
-        kwargs = self._prepare_title(kwargs)
-        kwargs = self._prepare_grid(kwargs)
-        kwargs = self._prepare_sizes(kwargs)
-        kwargs = self._prepare_labels(kwargs)
-        kwargs = self._prepare_category_orders(kwargs)
-        kwargs = self._prepare_patches(kwargs)
+        args.pop("self")
+        args = self._prepare_data(args)
+        args = self._prepare_title(args)
+        args = self._prepare_grid(args)
+        args = self._prepare_labels(args)
+        args = self._prepare_category_orders(args)
+        args = self._prepare_patches(args)
 
-        return kwargs
+        patches = args.pop("patches")
+
+        self.figure = constructor(**args)
+
+        self._update_sizes(args, patches)
+        self._update_layout(patches)
+        self._update_axes(args, patches)
+        self._update_markers(patches)
+        self._update_annotations(patches)
+        self._add_logo(patches)
+        self._add_watermark(patches)
+        self._add_note(patches)
+
+        return self.figure
 
     def _prepare_data(self, kwargs):
         if "data_frame" in kwargs:
@@ -475,83 +487,6 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
 
         return kwargs
 
-    def _prepare_sizes(self, kwargs):
-        # calculate figure width, height and margins
-        left_margin = self._get_config("axis_margin")
-        right_margin = self._get_config("border_margin")
-        top_margin = self._get_config("border_margin")
-        bottom_margin = self._get_config("axis_margin")
-
-        title_margin = top_margin + self.font_size_px
-        if kwargs["title"] is not None and "<br><sup>" in kwargs["title"]:
-            spacing = 0.236 * self.font_size
-            title_margin += self.subfont_size_px + spacing
-        title_margin = round(title_margin)
-
-        note_margin = round(self.font_size_px * 2 / 3 + 10)
-
-        if self._get_config("sizing") == "plot":
-            # apply facet plot scaling
-            if self.figure_ncols > 1 or self.figure_nrows > 1:
-                self.plot_width *= self._get_config("facet_scale")
-                self.plot_height *= self._get_config("facet_scale")
-
-            figure_width = (
-                left_margin + self.plot_width * self.figure_ncols + right_margin
-            )
-            figure_height = (
-                top_margin + self.plot_height * self.figure_nrows + bottom_margin
-            )
-            plot_width = self.plot_width * self.figure_ncols
-            plot_height = self.plot_height * self.figure_nrows
-
-            if kwargs["title"] is not None:
-                figure_height += title_margin
-                top_margin += title_margin
-
-            if kwargs["note"] is not None:
-                figure_height += note_margin
-                bottom_margin += note_margin
-
-            if kwargs["color"] is not None:  # color axis?
-                figure_width += self._get_config("legend_margin")
-                right_margin += self._get_config("legend_margin")
-        else:
-            figure_width = self.figure_width
-            figure_height = self.figure_height
-            plot_width = self.figure_width - (left_margin + right_margin)
-            plot_height = self.figure_height - (top_margin + bottom_margin)
-
-            if kwargs["title"] is not None:
-                plot_height -= title_margin
-                top_margin += title_margin
-
-            if kwargs["note"] is not None:
-                plot_height -= note_margin
-                bottom_margin += note_margin
-
-            if kwargs["color"] is not None:  # color axis?
-                plot_width -= self._get_config("legend_margin")
-                right_margin += self._get_config("legend_margin")
-
-        kwargs["width"] = figure_width
-        kwargs["height"] = figure_height
-
-        self.figure_width = figure_width
-        self.figure_height = figure_height
-        self.plot_width = plot_width
-        self.plot_height = plot_height
-
-        self.left_margin = left_margin
-        self.right_margin = right_margin
-        self.top_margin = top_margin
-        self.bottom_margin = bottom_margin
-
-        print(figure_width, plot_width, figure_height, plot_height)
-        print(left_margin, right_margin, top_margin, bottom_margin)
-
-        return kwargs
-
     def _prepare_labels(self, kwargs):
         if not isinstance(kwargs["labels"], dict):
             kwargs["labels"] = {}
@@ -647,27 +582,28 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
 
         return "normal"
 
-    def make_figure(self, args, constructor):
-        """
-        Make a figure object.
-        """
-        args = self.prepare_args(args)
+    def _update_sizes(self, kwargs, patches):
+        # calculate figure width, height and margins
+        default_margin = self._get_config("border_margin")
+        left_margin = default_margin
+        right_margin = default_margin
+        top_margin = default_margin
+        bottom_margin = default_margin
 
-        patches = args.pop("patches")
+        if "x" in kwargs:
+            bottom_margin += self._get_config("axis_margin")
 
-        self.figure = constructor(**args)
+        if "y" in kwargs:
+            left_margin += self._get_config("axis_margin")
 
-        self._update_layout(patches)
-        self._update_axes(patches, args)
-        self._update_markers(patches)
-        self._update_annotations(patches)
-        self._add_logo(patches)
-        self._add_watermark(patches)
-        self._add_note(patches)
+        title_margin = top_margin + self.font_size_px
+        if kwargs["title"] is not None and "<br><sup>" in kwargs["title"]:
+            spacing = 0.236 * self.font_size
+            title_margin += self.subfont_size_px + spacing
+        title_margin = round(title_margin)
 
-        return self.figure
+        note_margin = round(self.font_size_px * 2 / 3 + 10)
 
-    def _update_layout(self, patches):
         global is_leg
         is_leg = False
 
@@ -681,9 +617,71 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
         if "coloraxis" in self.figure.layout:
             is_leg = True
 
+        if self._get_config("sizing") == "plot":
+            # apply facet plot scaling
+            if self.figure_ncols > 1 or self.figure_nrows > 1:
+                self.plot_width *= self._get_config("facet_scale")
+                self.plot_height *= self._get_config("facet_scale")
+
+            figure_width = (
+                left_margin + self.plot_width * self.figure_ncols + right_margin
+            )
+            figure_height = (
+                top_margin + self.plot_height * self.figure_nrows + bottom_margin
+            )
+            plot_width = self.plot_width * self.figure_ncols
+            plot_height = self.plot_height * self.figure_nrows
+
+            if kwargs["title"] is not None:
+                figure_height += title_margin
+                top_margin += title_margin
+
+            if patches["note"] is not None:
+                figure_height += note_margin
+                bottom_margin += note_margin
+
+            if is_leg is True:
+                figure_width += self._get_config("legend_margin")
+                right_margin += self._get_config("legend_margin")
+        else:
+            figure_width = self.figure_width
+            figure_height = self.figure_height
+            plot_width = self.figure_width - (left_margin + right_margin)
+            plot_height = self.figure_height - (top_margin + bottom_margin)
+
+            if kwargs["title"] is not None:
+                plot_height -= title_margin
+                top_margin += title_margin
+
+            if patches["note"] is not None:
+                plot_height -= note_margin
+                bottom_margin += note_margin
+
+            if is_leg is True:
+                plot_width -= self._get_config("legend_margin")
+                right_margin += self._get_config("legend_margin")
+
+        self.figure_width = figure_width
+        self.figure_height = figure_height
+        self.plot_width = plot_width
+        self.plot_height = plot_height
+
+        self.left_margin = left_margin
+        self.right_margin = right_margin
+        self.top_margin = top_margin
+        self.bottom_margin = bottom_margin
+
+        print(figure_width, plot_width, figure_height, plot_height)
+        print(left_margin, right_margin, top_margin, bottom_margin)
+
+        return kwargs
+
+    def _update_layout(self, patches):
         border_margin = self._get_config("border_margin")
 
         defaults = {
+            "width": self.figure_width,
+            "height": self.figure_height,
             "margin_l": self.left_margin,
             "margin_r": self.right_margin,
             "margin_t": self.top_margin,
@@ -710,7 +708,7 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
 
         self.figure.update_layout(**kwargs)
 
-    def _update_axes(self, patches, kwargs):
+    def _update_axes(self, kwargs, patches):
         # add xaxis tick labels and titles back to overhanging plots
         # in facet column figures
         if kwargs.get("x") is not None and kwargs["facet_col_wrap"] is not None:
