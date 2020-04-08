@@ -44,3 +44,42 @@ log.colorlog:
 
 ### The maximun number of log files to maintain when rotating
 # max_files: 4
+
+
+plot.plotly:
+
+###
+# sizing: plot
+
+###
+# figure_width: 600
+
+###
+# figure_height: 600
+
+###
+# plot_width: 470
+
+###
+# plot_height: 470
+
+###
+# facet_scale: 0.5
+
+###
+# border_margin: 30
+
+###
+# axis_margin: 70
+
+###
+# legend_margin: 200
+
+###
+# marker_color_alpha: 0.5
+
+###
+# show_logo: false
+
+###
+# show_watermark: false
