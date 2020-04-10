@@ -64,6 +64,7 @@ class PlotlyExpress:
         height=None,
         units={},
         note=None,
+        patches={},
     ):
         """
         Scatter plot.
@@ -111,6 +112,7 @@ class PlotlyExpress:
         height=None,
         units={},
         note=None,
+        patches={},
     ):
         """
         Density contour plot.
@@ -158,6 +160,7 @@ class PlotlyExpress:
         height=None,
         units={},
         note=None,
+        patches={},
     ):
         """
         Density heatmap.
@@ -210,6 +213,7 @@ class PlotlyExpress:
         height=None,
         units={},
         note=None,
+        patches={},
     ):
         """
         Line plot.
@@ -254,6 +258,7 @@ class PlotlyExpress:
         height=None,
         units={},
         note=None,
+        patches={},
     ):
         """
         Area plot.
@@ -305,6 +310,7 @@ class PlotlyExpress:
         height=None,
         units={},
         note=None,
+        patches={},
     ):
         """
         Bar chart.
@@ -351,6 +357,7 @@ class PlotlyExpress:
         height=None,
         units={},
         note=None,
+        patches={},
     ):
         """
         Histogram.
@@ -396,6 +403,7 @@ class PlotlyExpress:
         height=None,
         units={},
         note=None,
+        patches={},
     ):
         """
         Violin plot.
@@ -439,6 +447,7 @@ class PlotlyExpress:
         height=None,
         units={},
         note=None,
+        patches={},
     ):
         """
         Box plot.
@@ -484,6 +493,7 @@ class PlotlyExpress:
         height=None,
         units={},
         note=None,
+        patches={},
     ):
         """
         Strip plot.
@@ -539,6 +549,7 @@ class PlotlyExpress:
         height=None,
         units={},
         note=None,
+        patches={},
     ):
         """
         3D scatter plot.
@@ -589,6 +600,7 @@ class PlotlyExpress:
         height=None,
         units={},
         note=None,
+        patches={},
     ):
         """
         3D line plot.
@@ -632,6 +644,7 @@ class PlotlyExpress:
         height=None,
         units={},
         note=None,
+        patches={},
     ):
         """
         Ternary plot.
@@ -671,6 +684,7 @@ class PlotlyExpress:
         height=None,
         units={},
         note=None,
+        patches={},
     ):
         """
         Ternary line plot.
@@ -717,8 +731,8 @@ class PlotlyExpress:
         template=None,
         width=None,
         height=None,
-        units={},
         note=None,
+        patches={},
     ):
         """
         Polar scatter plot.
@@ -762,8 +776,8 @@ class PlotlyExpress:
         template=None,
         width=None,
         height=None,
-        units={},
         note=None,
+        patches={},
     ):
         """
         Polar line plot.
@@ -804,8 +818,8 @@ class PlotlyExpress:
         template=None,
         width=None,
         height=None,
-        units={},
         note=None,
+        patches={},
     ):
         """
         Polar bar plot.
@@ -848,6 +862,7 @@ class PlotlyExpress:
         height=None,
         units={},
         note=None,
+        patches={},
     ):
         """
         Choropleth map.
@@ -892,6 +907,7 @@ class PlotlyExpress:
         height=None,
         units={},
         note=None,
+        patches={},
     ):
         """
         Geographic scatter plot.
@@ -934,6 +950,7 @@ class PlotlyExpress:
         height=None,
         units={},
         note=None,
+        patches={},
     ):
         """
         Geographic line plot.
@@ -976,6 +993,7 @@ class PlotlyExpress:
         height=None,
         units={},
         note=None,
+        patches={},
     ):
         """
         Mapbox scatter plot.
@@ -1016,6 +1034,7 @@ class PlotlyExpress:
         height=None,
         units={},
         note=None,
+        patches={},
     ):
         """
         Mapbox choropleth map.
@@ -1054,6 +1073,7 @@ class PlotlyExpress:
         height=None,
         units={},
         note=None,
+        patches={},
     ):
         """
         Mapbox density map.
@@ -1091,6 +1111,7 @@ class PlotlyExpress:
         height=None,
         units={},
         note=None,
+        patches={},
     ):
         """
         Mapbox line plot.
@@ -1129,6 +1150,7 @@ class PlotlyExpress:
         height=None,
         units={},
         note=None,
+        patches={},
     ):
         """
         Scatter plot matrix (or SPLOM).
@@ -1156,6 +1178,7 @@ class PlotlyExpress:
         height=None,
         units={},
         note=None,
+        patches={},
     ):
         """
         Parallel coordinates plot.
@@ -1184,6 +1207,7 @@ class PlotlyExpress:
         dimensions_max_cardinality=50,
         units={},
         note=None,
+        patches={},
     ):
         """
         Parallel categories plot.
@@ -1217,6 +1241,7 @@ class PlotlyExpress:
         hole=0.3,
         units={},
         note=None,
+        patches={},
     ):
         """
         Pie chart.
@@ -1253,6 +1278,7 @@ class PlotlyExpress:
         maxdepth=None,
         units={},
         note=None,
+        patches={},
     ):
         """
         Sunburst plot.
@@ -1290,6 +1316,7 @@ class PlotlyExpress:
         maxdepth=None,
         units={},
         note=None,
+        patches={},
     ):
         """
         Treemap plot.
@@ -1331,6 +1358,7 @@ class PlotlyExpress:
         height=None,
         units={},
         note=None,
+        patches={},
     ):
         """
         Funnel plot.
@@ -1361,6 +1389,7 @@ class PlotlyExpress:
         opacity=None,
         units={},
         note=None,
+        patches={},
     ):
         """
         Funnel area plot.
@@ -1391,6 +1420,7 @@ class PlotlyExpress:
         aspect=None,
         units={},
         note=None,
+        patches={},
     ):
         """
         Display an image, i.e. data on a 2D regular raster.
@@ -1469,6 +1499,9 @@ class PlotlyExpress:
             The axis units.
         note: str
             Figure note text.
+        patches: nested dict with str keys and any value (default `{}`)
+            Can contain patches to 'data', 'traces', 'markers',
+            'annotations', 'xaxis', 'yaxis' or 'layout'.
 
         Returns
         -------

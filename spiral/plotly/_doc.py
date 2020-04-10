@@ -373,7 +373,11 @@ docs = {
     "subtitle": ["str", "The figure subtitle."],
     "note": ["str", "Figure note text."],
     "units": ["dict with str keys and str values (default `{}`)", "The axis units."],
-    "patches": ["dict", "Patches."],
+    "patches": [
+        "nested dict with str keys and any value (default `{}`)",
+        "Can contain patches to 'data', 'traces', 'markers', 'annotations',"
+        " 'xaxis', 'yaxis' or 'layout'.",
+    ],
     "template": [
         "str or dict or plotly.graph_objects.layout.Template instance",
         "The figure template name (must be a key in plotly.io.templates) or"
