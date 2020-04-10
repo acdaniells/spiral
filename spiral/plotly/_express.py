@@ -1499,7 +1499,7 @@ class PlotlyExpress:
             The axis units.
         note: str
             Figure note text.
-        patches: nested dict with str keys and any value (default `{}`)
+        patches : nested dict with str keys and any value (default `{}`)
             Can contain patches to 'data', 'traces', 'markers',
             'annotations', 'xaxis', 'yaxis' or 'layout'.
 
