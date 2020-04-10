@@ -134,7 +134,7 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
         """The list of available custom themes."""
 
         data_attributes = (
-            ["x", "y", "z", "a", "b", "c", "r", "theta", "size"]
+            ["x", "y", "z", "a", "b", "c", "r", "theta", "size", "dimensions"]
             + ["custom_data", "hover_name", "hover_data", "text"]
             + ["names", "values", "parents", "ids"]
             + ["error_x", "error_y", "error_z"]
@@ -143,6 +143,8 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
             + ["animation_frame", "facet_row", "facet_col", "line_group"]
             + ["color", "symbol", "line_dash"]
         )
+
+        array_attributes = ["dimensions", "custom_data", "hover_data", "path"]
 
         axes = ["x", "y", "z", "a", "b", "c"]
         """A list of axes names."""
@@ -187,6 +189,8 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
     def __init__(self, **kw):
         super().__init__(**kw)
 
+        self.args = None
+        self.patches = None
         self.figure = None
         self.left_margin = None
         self.right_margin = None
@@ -209,24 +213,6 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
             raise SpiralError(
                 "Configuration parameter 'sizing' must be either 'figure' or 'plot'"
             )
-
-    def set_theme(self, name="spiral"):
-        """
-        Set the theme used for creating figures.
-        """
-        if name == pio.templates.default:
-            return
-
-        theme_names = name.split("+")
-
-        for theme_name in theme_names:
-            if theme_name not in self._meta.custom_themes:
-                continue
-
-            pio.templates[theme_name] = load_theme(theme_name)
-            self.logo_source = load_logo(theme_name)
-
-        pio.templates.default = name
 
     @property
     def figure_width(self):
@@ -353,6 +339,84 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
 
         return titlecase(text, callback=skip_words)
 
+    @staticmethod
+    def _is_series_cat(series):
+        if str(series.dtype) in ("category"):
+            return True
+
+        if str(series.dtype) in ("object", "int", "bool"):
+            if series.nunique() / len(series) < 0.5:
+                return True
+
+        return False
+
+    @staticmethod
+    def _rangemode(series):
+        try:
+            if series.array.min() / series.array.max() < 1 / 3:
+                return "tozero"
+        except TypeError:
+            pass
+
+        return "normal"
+
+    def _update_title_text(self, obj):
+        text = obj["title_text"]
+
+        if text is not None:
+            if text in self.args["labels"]:
+                text = self.args["labels"][text]
+            else:
+                text = self._title_case(self._clean_text(text))
+
+            obj.update(title_text=text)
+
+    def _update_markers(self, trace):
+        options = {}
+        if "markers" in self.patches:
+            options.update(self.patches["marker"])
+
+        if isinstance(trace.marker.color, str):
+            r, g, b = color_to_rgb(trace.marker.color)
+            a = self._get_config("marker_color_alpha")
+
+            options["marker_color"] = f"rgba({r}, {g}, {b}, {a})"
+            options["marker_line_color"] = trace.marker.color
+        else:
+            # what to do for color tuple?
+            pass
+
+        trace.update(**options)
+
+    def _update_annotation(self, annotation):
+        options = {}
+        if "annotations" in self.patches:
+            options.update(self.patches["annotation"])
+
+        options["text"] = self._title_case(
+            self._clean_text(annotation.text.split("=")[-1])
+        )
+
+        annotation.update(**options)
+
+    def set_theme(self, name="spiral"):
+        """
+        Set the theme used for creating figures.
+        """
+        if name == pio.templates.default:
+            return
+
+        theme_names = name.split("+")
+
+        for theme_name in theme_names:
+            if theme_name not in self._meta.custom_themes:
+                continue
+
+            pio.templates[theme_name] = load_theme(theme_name)
+            self.logo_source = load_logo(theme_name)
+
+        pio.templates.default = name
+
     def make_figure(self, args, constructor):
         """
         Make a figure object.
@@ -365,18 +429,18 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
         args = self._prepare_category_orders(args)
         args = self._prepare_patches(args)
 
-        patches = args.pop("patches")
+        self.patches = args.pop("patches")
+        self.args = args
 
         self.figure = constructor(**args)
 
-        self._update_sizes(args, patches)
-        self._update_layout(patches)
-        self._update_axes(args, patches)
-        self._update_markers(patches)
-        self._update_annotations(patches)
-        self._add_logo(patches)
-        self._add_watermark(patches)
-        self._add_note(patches)
+        self._update_sizes()
+        self._update_layout()
+        self._update_axes()
+        self._update_traces()
+        self._add_logo()
+        self._add_watermark()
+        self._add_note()
 
         return self.figure
 
@@ -390,11 +454,20 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
             if not isinstance(data, pd.DataFrame):
                 data = pd.DataFrame(data)
 
+            # flatten variables
+            data_attributes = {}
             for key, arg in kwargs.items():
                 # consider only data attributes
                 if key not in self._meta.data_attributes or arg is None:
                     continue
 
+                if key in self._meta.array_attributes:
+                    for i in range(len(arg)):
+                        data_attributes[f"{key}_{str(i)}"] = arg[i]
+                else:
+                    data_attributes[key] = arg
+
+            for key, arg in data_attributes.items():
                 # get column name
                 if isinstance(arg, pd.Series):
                     column = arg.name
@@ -412,7 +485,12 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
                         data[column] = np.array(arg)
 
                 # update argument with column name
-                kwargs[key] = column
+                base_key = key[: key.rfind("_")]
+                if base_key in kwargs:
+                    index = int(key[key.rfind("_") + 1 :])  # noqa: E203
+                    kwargs[base_key][index] = column
+                else:
+                    kwargs[key] = column
 
             # update data frame
             kwargs["data_frame"] = data
@@ -427,7 +505,7 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
             title = self._title_case(self._clean_text(title))
 
             if subtitle is not None:
-                title += f"<br><sup>{self._clean_text(subtitle)}</sup>"
+                title += f"<br><sup><i>{self._clean_text(subtitle)}</sup>"
 
             kwargs["title"] = title
 
@@ -509,6 +587,7 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
                 label = self._title_case(self._clean_text(key))
                 labels[key] = f"{label} [{unit}]"
 
+        labels.update(kwargs["labels"])
         kwargs["labels"] = labels
 
         return kwargs
@@ -561,28 +640,7 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
 
         return kwargs
 
-    @staticmethod
-    def _is_series_cat(series):
-        if str(series.dtype) in ("category"):
-            return True
-
-        if str(series.dtype) in ("object", "int", "bool"):
-            if series.nunique() / len(series) < 0.5:
-                return True
-
-        return False
-
-    @staticmethod
-    def _rangemode(series):
-        try:
-            if series.array.min() / series.array.max() < 1 / 3:
-                return "tozero"
-        except TypeError:
-            pass
-
-        return "normal"
-
-    def _update_sizes(self, kwargs, patches):
+    def _update_sizes(self):
         # calculate figure width, height and margins
         default_margin = self._get_config("border_margin")
         left_margin = default_margin
@@ -590,14 +648,14 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
         top_margin = default_margin
         bottom_margin = default_margin
 
-        if "x" in kwargs:
+        if "x" in self.args:
             bottom_margin += self._get_config("axis_margin")
 
-        if "y" in kwargs:
+        if "y" in self.args:
             left_margin += self._get_config("axis_margin")
 
         title_margin = top_margin + self.font_size_px
-        if kwargs["title"] is not None and "<br><sup>" in kwargs["title"]:
+        if self.args["title"] is not None and "<br><sup>" in self.args["title"]:
             spacing = 0.236 * self.font_size
             title_margin += self.subfont_size_px + spacing
         title_margin = round(title_margin)
@@ -632,11 +690,11 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
             plot_width = self.plot_width * self.figure_ncols
             plot_height = self.plot_height * self.figure_nrows
 
-            if kwargs["title"] is not None:
+            if self.args["title"] is not None:
                 figure_height += title_margin
                 top_margin += title_margin
 
-            if patches["note"] is not None:
+            if self.patches["note"] is not None:
                 figure_height += note_margin
                 bottom_margin += note_margin
 
@@ -649,11 +707,11 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
             plot_width = self.figure_width - (left_margin + right_margin)
             plot_height = self.figure_height - (top_margin + bottom_margin)
 
-            if kwargs["title"] is not None:
+            if self.args["title"] is not None:
                 plot_height -= title_margin
                 top_margin += title_margin
 
-            if patches["note"] is not None:
+            if self.patches["note"] is not None:
                 plot_height -= note_margin
                 bottom_margin += note_margin
 
@@ -671,15 +729,10 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
         self.top_margin = top_margin
         self.bottom_margin = bottom_margin
 
-        print(figure_width, plot_width, figure_height, plot_height)
-        print(left_margin, right_margin, top_margin, bottom_margin)
-
-        return kwargs
-
-    def _update_layout(self, patches):
+    def _update_layout(self):
         border_margin = self._get_config("border_margin")
 
-        defaults = {
+        layout_options = {
             "width": self.figure_width,
             "height": self.figure_height,
             "margin_l": self.left_margin,
@@ -702,93 +755,54 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
             "coloraxis_colorbar_yanchor": "top",
         }
 
-        kwargs = defaults.copy()
-        if "layout" in patches:
-            kwargs.update(patches["layout"])
+        if "layout" in self.patches:
+            layout_options.update(self.patches["layout"])
 
-        self.figure.update_layout(**kwargs)
+        self.figure.update_layout(**layout_options)
 
-    def _update_axes(self, kwargs, patches):
+        self.figure.for_each_annotation(self._update_annotation)
+
+        self._update_title_text(self.figure.layout.coloraxis.colorbar)
+
+    def _update_axes(self):
         # add xaxis tick labels and titles back to overhanging plots
         # in facet column figures
-        if kwargs.get("x") is not None and kwargs["facet_col_wrap"] is not None:
-            xaxis_title_text = kwargs["labels"][kwargs["x"]]
+        if self.args.get("x") is not None and self.args["facet_col_wrap"] is not None:
+            xaxis_title_text = self.args["labels"][self.args["x"]]
 
-            def update(axis):
+            def _show_axis(axis):
                 axis.update(showticklabels=True, title_text=xaxis_title_text)
 
             for col in range(self.facet_ncols % self.figure_ncols, self.figure_ncols):
-                self.figure.for_each_xaxis(update, col=col + 1, row=2)
+                self.figure.for_each_xaxis(_show_axis, col=col + 1, row=2)
 
-        # update axis titles
-        def _update_title_text(axis):
-            text = axis["title_text"]
-
-            if text is not None:
-                if text in kwargs["labels"]:
-                    text = kwargs["labels"][text]
-                else:
-                    text = self._title_case(self._clean_text(text))
-
-                axis.update(title_text=text)
-
-        self.figure.for_each_xaxis(_update_title_text)
-        self.figure.for_each_yaxis(_update_title_text)
+        self.figure.for_each_xaxis(self._update_title_text)
+        self.figure.for_each_yaxis(self._update_title_text)
 
         # apply patches all axes
-        defaults = {}
+        axis_options = {}
+        if "xaxis" in self.patches:
+            axis_options.update(self.patches["xaxis"])
 
-        kwargs = defaults.copy()
-        if "xaxis" in patches:
-            kwargs.update(patches["xaxis"])
+        self.figure.update_xaxes(**axis_options)
 
-        self.figure.update_xaxes(**kwargs)
+        axis_options = {}
+        if "yaxis" in self.patches:
+            axis_options.update(self.patches["yaxis"])
 
-        kwargs = defaults.copy()
-        if "yaxis" in patches:
-            kwargs.update(patches["yaxis"])
+        self.figure.update_yaxes(**axis_options)
 
-        self.figure.update_yaxes(**kwargs)
+    def _update_traces(self):
+        if "data" in self.patches:
+            for i, options in enumerate(self.patches["data"]):
+                self.figure.data[i].update(options)
 
-    def _update_markers(self, patches):
-        defaults = {}
+        if "traces" in self.patches:
+            self.figure.update_traces(self.patches["traces"])
 
-        def update(trace):
-            kwargs = defaults.copy()
-            if "marker" in patches:
-                kwargs.update(patches["marker"])
+        self.figure.for_each_trace(self._update_markers, selector={"mode": "markers"})
 
-            if isinstance(trace.marker.color, str):
-                r, g, b = color_to_rgb(trace.marker.color)
-                a = self._get_config("marker_color_alpha")
-
-                kwargs["marker_color"] = f"rgba({r}, {g}, {b}, {a})"
-                kwargs["marker_line_color"] = trace.marker.color
-            else:
-                # what to do for color tuple?
-                pass
-
-            trace.update(**kwargs)
-
-        self.figure.for_each_trace(update, selector={"mode": "markers"})
-
-    def _update_annotations(self, patches):
-        defaults = {}
-
-        def update(annotation):
-            kwargs = defaults.copy()
-            if "annotation" in patches:
-                kwargs.update(patches["annotation"])
-
-            kwargs["text"] = self._title_case(
-                self._clean_text(annotation.text.split("=")[-1])
-            )
-
-            annotation.update(**kwargs)
-
-        self.figure.for_each_annotation(update)
-
-    def _add_logo(self, patches):
+    def _add_logo(self):
         if self._get_config("show_logo") is False:
             return
 
@@ -856,13 +870,13 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
         }
 
         kwargs = defaults.copy()
-        if "logo" in patches:
-            kwargs.update(patches["logo"])
+        if "logo" in self.patches:
+            kwargs.update(self.patches["logo"])
 
         if kwargs["source"] is not None:
             self.figure.add_layout_image(**kwargs)
 
-    def _add_watermark(self, patches):
+    def _add_watermark(self):
         if self._get_config("show_watermark") is False:
             return
 
@@ -888,13 +902,13 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
         }
 
         kwargs = defaults.copy()
-        if "watermark" in patches:
-            kwargs.update(patches["watermark"])
+        if "watermark" in self.patches:
+            kwargs.update(self.patches["watermark"])
 
         self.figure.add_annotation(**kwargs)
 
-    def _add_note(self, patches):
-        if patches.get("note") is None:
+    def _add_note(self):
+        if self.patches.get("note") is None:
             return
 
         axis_margin = self._get_config("axis_margin")
@@ -902,7 +916,7 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
 
         defaults = {
             "name": "note",
-            "text": patches["note"],
+            "text": self.patches["note"],
             "opacity": 0.85,
             "font_size": self.font_size * 2 / 3,
             "x": self.plot_x(0, border_margin - axis_margin),
@@ -915,8 +929,8 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
         }
 
         kwargs = defaults.copy()
-        if "note" in patches:
-            kwargs.update(patches["note"])
+        if "note" in self.patches:
+            kwargs.update(self.patches["note"])
 
         self.figure.add_annotation(**kwargs)
 
