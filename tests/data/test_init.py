@@ -12,15 +12,15 @@ def test_list_datasets():
 
 
 def test_load_carshare_dataset():
-    df = load_dataset("carshare")
-    assert isinstance(df, pd.DataFrame)
-    assert df.shape == (249, 4)
+    data = load_dataset("carshare")
+    assert isinstance(data, pd.DataFrame)
+    assert data.shape == (249, 4)
 
 
 def test_load_election_dataset():
-    df = load_dataset("election")
-    assert isinstance(df, pd.DataFrame)
-    assert df.shape == (58, 8)
+    data = load_dataset("election")
+    assert isinstance(data, pd.DataFrame)
+    assert data.shape == (58, 8)
 
 
 def test_load_election_geojson_dataset():
@@ -29,34 +29,40 @@ def test_load_election_geojson_dataset():
     assert sorted(data.keys()) == ["features", "type"]
 
 
+def test_load_flights_dataset():
+    data = load_dataset("flights")
+    assert isinstance(data, pd.DataFrame)
+    assert data.shape == (144, 3)
+
+
 def test_load_gapminder_dataset():
-    df = load_dataset("gapminder")
-    assert isinstance(df, pd.DataFrame)
-    assert df.shape == (1704, 8)
+    data = load_dataset("gapminder")
+    assert isinstance(data, pd.DataFrame)
+    assert data.shape == (1704, 8)
 
 
 def test_load_iris_dataset():
-    df = load_dataset("iris")
-    assert isinstance(df, pd.DataFrame)
-    assert df.shape == (150, 6)
+    data = load_dataset("iris")
+    assert isinstance(data, pd.DataFrame)
+    assert data.shape == (150, 6)
 
 
 def test_load_tips_dataset():
-    df = load_dataset("tips")
-    assert isinstance(df, pd.DataFrame)
-    assert df.shape == (244, 7)
+    data = load_dataset("tips")
+    assert isinstance(data, pd.DataFrame)
+    assert data.shape == (244, 7)
 
 
 def test_load_titanic_dataset():
-    df = load_dataset("titanic")
-    assert isinstance(df, pd.DataFrame)
-    assert df.shape == (891, 15)
+    data = load_dataset("titanic")
+    assert isinstance(data, pd.DataFrame)
+    assert data.shape == (891, 15)
 
 
 def test_load_wind_dataset():
-    df = load_dataset("wind")
-    assert isinstance(df, pd.DataFrame)
-    assert df.shape == (128, 3)
+    data = load_dataset("wind")
+    assert isinstance(data, pd.DataFrame)
+    assert data.shape == (128, 3)
 
 
 def test_invalid_loader():
