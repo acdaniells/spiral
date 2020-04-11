@@ -1,44 +1,38 @@
 """
-Spiral pie plot example.
+Spiral pie chart example.
 """
 
-from spiral import App, init_defaults
+from spiral import App
 from spiral.data import load_dataset
-
-# configuration defaults
-CONFIG = init_defaults("plot.plotly")
-CONFIG["plot.plotly"]["show_logo"] = True
 
 
 # app definition
 class PlotApp(App):
     class Meta:
         label = "pie"
-        config_defaults = CONFIG
         plot_handler = "plotly"
 
 
 with PlotApp() as app:
     # load the gapminder dataset
-    gapminder = load_dataset("gapminder")
+    data = load_dataset("gapminder")
 
-    df = gapminder.query("year == 2007").query("continent == 'Americas'")
+    # filter dataset
+    data = data.query("year == 2007").query("continent == 'Americas'")
 
     # set the theme
     app.plot.set_theme("spiral")
 
-    # create a pie chart
+    # create a pie chart with hover additional data
     fig = app.plot.pie(
-        data_frame=df,
+        data,
         values="pop",
         names="country",
-        title="Population of American continent",
-        # hover_data=["lifeExp"],
-        labels={"lifeExp": "life expectancy"},
+        title="Population of American continent (2007)",
+        hover_data=["lifeExp"],
+        labels={"lifeExp": "Life Expectancy"},
         hole=0.3,
+        patches={"traces": {"textposition": "inside", "textinfo": "percent+label"}},
     )
-
-    fig.update_layout(margin={"l": 30, "b": 30})
-    fig.update_traces(textposition="inside", textinfo="percent+label")
 
     fig.show()
