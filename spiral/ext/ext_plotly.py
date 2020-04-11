@@ -374,7 +374,7 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
     def _update_markers(self, trace):
         options = {}
         if "markers" in self.patches:
-            options.update(self.patches["marker"])
+            options.update(self.patches["markers"])
 
         if isinstance(trace.marker.color, str):
             r, g, b = color_to_rgb(trace.marker.color)
@@ -578,15 +578,6 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
                 if x not in kwargs["labels"]
             }
 
-        # add units to axis labels
-        if "units" in kwargs:
-            units = kwargs.pop("units")
-
-            for axis, unit in units.items():
-                key = kwargs[axis]
-                label = self._title_case(self._clean_text(key))
-                labels[key] = f"{label} [{unit}]"
-
         labels.update(kwargs["labels"])
         kwargs["labels"] = labels
 
@@ -627,10 +618,20 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
             for axis in ("x", "y"):
                 column = kwargs.get(axis)
                 if column is not None:
-                    patches[f"{axis}axis"] = {
-                        "showgrid": not self._is_series_cat(data[column]),
-                        "rangemode": self._rangemode(data[column]),
-                    }
+                    showgrid = not self._is_series_cat(data[column])
+                    rangemode = self._rangemode(data[column])
+                    patches.update(
+                        {f"{axis}axis": {"showgrid": showgrid, "rangemode": rangemode}}
+                    )
+
+        # add units to axis labels
+        if "units" in kwargs:
+            units = kwargs.pop("units")
+
+            for axis, unit in units.items():
+                key = kwargs[axis]
+                label = self._title_case(self._clean_text(kwargs["labels"][key]))
+                patches.update({f"{axis}axis": {"title_text": f"{label} [{unit}]"}})
 
         if "note" in kwargs:
             patches["note"] = kwargs.pop("note")
