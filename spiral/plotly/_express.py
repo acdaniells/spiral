@@ -1176,7 +1176,6 @@ class PlotlyExpress:
         template=None,
         width=None,
         height=None,
-        units={},
         note=None,
         patches={},
     ):
@@ -1205,7 +1204,6 @@ class PlotlyExpress:
         width=None,
         height=None,
         dimensions_max_cardinality=50,
-        units={},
         note=None,
         patches={},
     ):
