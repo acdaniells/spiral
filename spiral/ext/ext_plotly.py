@@ -200,6 +200,7 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
         self.facet_ncols = None
         self.figure_ncols = None
         self.figure_nrows = None
+        self.legend_or_colorbar = False
 
     def _setup(self, app):
         super()._setup(app)
@@ -359,6 +360,10 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
             pass
 
         return "normal"
+
+    def _has_legend(self, trace):
+        if "showlegend" in trace and trace.showlegend is True:
+            self.legend_or_colorbar = True
 
     def _update_title_text(self, obj):
         text = obj["title_text"]
@@ -663,18 +668,10 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
 
         note_margin = round(self.font_size_px * 2 / 3 + 10)
 
-        global is_leg
-        is_leg = False
-
-        def _is_leg(trace):
-            global is_leg
-            if "showlegend" in trace and trace.showlegend is True:
-                is_leg = True
-
-        self.figure.for_each_trace(_is_leg)
+        self.figure.for_each_trace(self._has_legend)
 
         if "coloraxis" in self.figure.layout:
-            is_leg = True
+            self.legend_or_colorbar = True
 
         if self._get_config("sizing") == "plot":
             # apply facet plot scaling
@@ -699,7 +696,7 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
                 figure_height += note_margin
                 bottom_margin += note_margin
 
-            if is_leg is True:
+            if self.legend_or_colorbar is True:
                 figure_width += self._get_config("legend_margin")
                 right_margin += self._get_config("legend_margin")
         else:
@@ -716,7 +713,7 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
                 plot_height -= note_margin
                 bottom_margin += note_margin
 
-            if is_leg is True:
+            if self.legend_or_colorbar is True:
                 plot_width -= self._get_config("legend_margin")
                 right_margin += self._get_config("legend_margin")
 
@@ -801,54 +798,11 @@ class PlotlyPlotHandler(PlotlyExpress, PlotHandler):
         if "traces" in self.patches:
             self.figure.update_traces(self.patches["traces"])
 
-        self.figure.for_each_trace(self._update_markers, selector={"mode": "markers"})
+        self.figure.for_each_trace(self._update_markers)
 
     def _add_logo(self):
         if self._get_config("show_logo") is False:
             return
-
-        """
-        import io
-        from urllib.request import urlopen
-
-        from PIL import Image
-
-        from PIL import ImageFile
-
-        def getsizes(uri):
-            # get file size *and* image size (None if not known)
-            file = urlopen(uri)
-            size = file.headers.get("content-length")
-            if size:
-                size = int(size)
-            p = ImageFile.Parser()
-            while True:
-                data = file.read(1024)
-                if not data:
-                    break
-                p.feed(data)
-                if p.image:
-                    return size, p.image.size
-                    break
-            file.close()
-            return(size, None)
-
-        #logo = urlopen(self.logo_source).read()
-
-        #file = io.StringIO(self.logo_source)
-
-        #print(file)
-
-        #im = Image.open(file)
-
-        im = Image.open(urlopen(self.logo_source).read())
-        im.thumbnail(size)
-        im.save(file + ".thumbnail", "JPEG")
-
-        width, height = 1,2 #getsizes(self.logo_source)
-
-        print(width, height)
-        """
 
         width, height = 0.15, 0.058
         max_height = 0.075
