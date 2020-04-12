@@ -30,7 +30,7 @@ with PlotApp() as app:
         hover_data=["country"],
         labels={
             "lifeExp": "Life Expectancy",
-            "gdpPercap": "GDP per capita",
+            "gdpPercap": "GDP Per Capita",
             "pop": "Population",
         },
         log_y=True,
