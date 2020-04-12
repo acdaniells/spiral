@@ -133,6 +133,11 @@ def spiral():
     template.data.scatterternary = [opts]
     template.data.scattergeo = [opts]
 
+    # set marker size ans line for strip plots
+    opts = {"marker": {"size": 5, "line": {"width": 1}}}
+    template.data.box = [opts]
+    template.data.violin = [opts]
+
     # table font properties
     template.data.table[0].header.font.color = "white"
     template.data.table[0].header.font.size = 12
