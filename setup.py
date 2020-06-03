@@ -34,7 +34,7 @@ setup(
         "Topic :: Software Development :: Libraries :: Application Frameworks",
     ],
     python_requires=">=3.6",
-    install_requires=["jinja2", "PyYAML"],
+    install_requires=["cement", "pandas", "jinja2", "PyYAML"],
     packages=find_packages(exclude=["examples*", "scripts*", "tests*"]),
     package_data={
         "spiral": [
